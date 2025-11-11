@@ -51,8 +51,8 @@ export default function ProfilePage() {
     }
   };
 
-  // Determine the correct photo URL, prioritizing the fresh data from Auth
-  const displayPhotoUrl = user?.photoURL ?? userProfile?.photoURL;
+  // Determine the correct photo URL, prioritizing the data from Firestore (userProfile)
+  const displayPhotoUrl = userProfile?.photoURL ?? user?.photoURL;
   const displayDisplayName = user?.displayName || userProfile?.displayName || t('profileNoDisplayName');
 
   return (
