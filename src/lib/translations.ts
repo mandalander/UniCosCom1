@@ -41,6 +41,7 @@ export const translations = {
     profileNotLoggedIn: 'Zaloguj się, aby zobaczyć swój profil.',
     profileLoading: 'Ładowanie profilu...',
     profileEmail: 'Email',
+    profileId: 'ID Użytkownika',
 
 
     // Settings Page
@@ -101,6 +102,7 @@ export const translations = {
     profileNotLoggedIn: 'Log in to see your profile.',
     profileLoading: 'Loading profile...',
     profileEmail: 'Email',
+    profileId: 'User ID',
 
 
     // Settings Page

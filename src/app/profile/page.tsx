@@ -25,11 +25,15 @@ export default function ProfilePage() {
           <div className="space-y-2">
             <Skeleton className="h-4 w-[250px]" />
             <Skeleton className="h-4 w-[200px]" />
+            <Skeleton className="h-4 w-[300px]" />
           </div>
         ) : user ? (
-          <div>
+          <div className="space-y-2">
             <p>
               <strong>{t('profileEmail')}:</strong> {user.email}
+            </p>
+            <p>
+              <strong>{t('profileId')}:</strong> {user.uid}
             </p>
           </div>
         ) : (
