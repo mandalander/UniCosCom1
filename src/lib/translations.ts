@@ -7,6 +7,7 @@ export const translations = {
     profile: 'Profil',
     settings: 'Ustawienia',
     appNavigator: 'Nawigator Aplikacji',
+    createNewCommunity: 'Utwórz nową społeczność',
 
     // Top Nav Bar
     login: 'Zaloguj się',
@@ -128,6 +129,7 @@ export const translations = {
     profile: 'Profile',
     settings: 'Settings',
     appNavigator: 'App Navigator',
+    createNewCommunity: 'Create new community',
 
     // Top Nav Bar
     login: 'Log in',

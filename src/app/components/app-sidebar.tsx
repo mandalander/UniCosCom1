@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Home, Settings, User, Compass } from 'lucide-react';
+import { Home, Settings, Compass, PlusCircle } from 'lucide-react';
 import {
   Sidebar,
   SidebarHeader,
@@ -28,6 +28,7 @@ export function AppSidebar() {
     { href: '/explore', label: t('explore'), icon: Compass, requiresAuth: false },
   ];
   
+  const createCommunityMenuItem = { href: '/communities/create', label: t('createNewCommunity'), icon: PlusCircle, requiresAuth: true };
   const settingsMenuItem = { href: '/settings', label: t('settings'), icon: Settings, requiresAuth: false };
 
 
@@ -87,6 +88,20 @@ export function AppSidebar() {
       </SidebarContent>
       <SidebarFooter>
         <SidebarMenu>
+          {user && (
+            <SidebarMenuItem>
+                <SidebarMenuButton
+                asChild
+                isActive={pathname === createCommunityMenuItem.href}
+                tooltip={createCommunityMenuItem.label}
+                >
+                <Link href={createCommunityMenuItem.href}>
+                    <createCommunityMenuItem.icon />
+                    <span>{createCommunityMenuItem.label}</span>
+                </Link>
+                </SidebarMenuButton>
+            </SidebarMenuItem>
+          )}
           <SidebarMenuItem>
             <SidebarMenuButton
               asChild
