@@ -36,7 +36,12 @@ export default function LoginPage() {
 
   const handleGoogleSignIn = () => {
     const provider = new GoogleAuthProvider();
-    signInWithPopup(auth, provider);
+    // Do not await this, let it run in the background
+    signInWithPopup(auth, provider).catch((error) => {
+      // The error is expected if the provider is not enabled.
+      // We will log it to the console for debugging but not crash the app.
+      console.error("Google Sign-In Error:", error);
+    });
   };
 
   return (
