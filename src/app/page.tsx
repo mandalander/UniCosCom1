@@ -5,6 +5,7 @@ import { useCollection, useFirestore, useMemoFirebase } from "@/firebase";
 import { collection, query, orderBy } from "firebase/firestore";
 import { Skeleton } from "@/components/ui/skeleton";
 import Link from "next/link";
+import { useEffect, useState } from "react";
 
 type Community = {
   id: string;
@@ -16,13 +17,19 @@ type Community = {
 export default function Home() {
   const { t } = useLanguage();
   const firestore = useFirestore();
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   const communitiesQuery = useMemoFirebase(() => {
-    if (!firestore) return null;
+    if (!firestore || !isClient) return null;
     return query(collection(firestore, 'communities'), orderBy('createdAt', 'desc'));
-  }, [firestore]);
+  }, [firestore, isClient]);
 
   const { data: communities, isLoading } = useCollection<Community>(communitiesQuery);
+  const showLoading = isLoading || !isClient;
 
   return (
     <div className="container mx-auto">
@@ -42,7 +49,7 @@ export default function Home() {
 
       <div className="space-y-4">
         <h2 className="text-2xl font-bold">Społeczności</h2>
-        {isLoading ? (
+        {showLoading ? (
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             {[...Array(3)].map((_, i) => (
               <Card key={i}>
