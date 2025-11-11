@@ -38,6 +38,7 @@ export default function EditProfilePage() {
   const { toast } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  const [displayName, setDisplayName] = useState('');
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [gender, setGender] = useState('');
@@ -61,6 +62,7 @@ export default function EditProfilePage() {
 
   useEffect(() => {
     if (userProfile) {
+      setDisplayName(userProfile.displayName || '');
       setFirstName(userProfile.firstName || '');
       setLastName(userProfile.lastName || '');
       setGender(userProfile.gender || '');
@@ -71,7 +73,7 @@ export default function EditProfilePage() {
         setPhotoURL(userProfile.photoURL);
       }
     } else if (user) {
-        // Fallback to displayName if firstName/lastName are not in profile
+        setDisplayName(user.displayName || '');
         const nameParts = user.displayName?.split(' ') || ['', ''];
         setFirstName(nameParts[0] || '');
         setLastName(nameParts.slice(1).join(' ') || '');
@@ -115,18 +117,16 @@ export default function EditProfilePage() {
         const snapshot = await uploadString(storageRef, newPhotoDataUrl, 'data_url');
         finalPhotoUrl = await getDownloadURL(snapshot.ref);
       }
-  
-      const newDisplayName = `${firstName} ${lastName}`.trim();
       
       await updateProfile(auth.currentUser, {
-        displayName: newDisplayName,
+        displayName: displayName,
         photoURL: finalPhotoUrl,
       });
 
       const firestoreUpdateData: any = {
         firstName: firstName,
         lastName: lastName,
-        displayName: newDisplayName,
+        displayName: displayName,
         gender: gender,
         birthDate: birthDate ? format(birthDate, 'yyyy-MM-dd') : null,
         photoURL: finalPhotoUrl,
@@ -157,8 +157,6 @@ export default function EditProfilePage() {
   };
 
   const isLoading = isUserLoading || isProfileLoading;
-
-  const displayName = `${firstName} ${lastName}`.trim();
 
   if (isLoading && !user) {
     return <div>{t('profileLoading')}</div>;
@@ -195,6 +193,16 @@ export default function EditProfilePage() {
                 />
             </div>
           </div>
+          <div className="grid gap-2">
+              <Label htmlFor="displayName">{t('profileDisplayName')}</Label>
+              <Input
+                id="displayName"
+                value={displayName}
+                onChange={(e) => setDisplayName(e.target.value)}
+                placeholder={t('profileDisplayName')}
+                disabled={isSaving}
+              />
+            </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="grid gap-2">
               <Label htmlFor="firstName">{t('profileFirstName')}</Label>

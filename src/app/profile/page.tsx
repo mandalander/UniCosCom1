@@ -64,7 +64,8 @@ export default function ProfilePage() {
   
   const displayFirstName = userProfile?.firstName;
   const displayLastName = userProfile?.lastName;
-  const displayFullName = [displayFirstName, displayLastName].filter(Boolean).join(' ') || user?.displayName || t('profileNoDisplayName');
+  const displayFullName = [displayFirstName, displayLastName].filter(Boolean).join(' ');
+  const displayName = userProfile?.displayName || user?.displayName || displayFullName || t('profileNoDisplayName');
 
 
   return (
@@ -95,12 +96,12 @@ export default function ProfilePage() {
             <div className="space-y-4">
                 <div className="flex items-center space-x-4">
                     <Avatar className="h-16 w-16">
-                        <AvatarImage src={displayPhotoUrl ?? undefined} alt={displayFullName} />
-                        <AvatarFallback>{getInitials(displayFullName, user.email)}</AvatarFallback>
+                        <AvatarImage src={displayPhotoUrl ?? undefined} alt={displayName} />
+                        <AvatarFallback>{getInitials(displayName, user.email)}</AvatarFallback>
                     </Avatar>
                     <div className='space-y-1'>
                         <p className="text-xl font-semibold">
-                            {displayFullName}
+                            {displayName}
                         </p>
                         <p className="text-sm text-muted-foreground">
                             {user.email}
@@ -109,6 +110,9 @@ export default function ProfilePage() {
                 </div>
 
                 <div className="space-y-2 pt-4">
+                    <p>
+                    <strong>{t('profileDisplayName')}:</strong> {userProfile?.displayName || t('profileNotSet')}
+                    </p>
                     <p>
                     <strong>{t('profileFirstName')}:</strong> {displayFirstName || t('profileNotSet')}
                     </p>
