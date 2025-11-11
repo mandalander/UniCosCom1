@@ -101,7 +101,6 @@ export default function EditProfilePage() {
   
     if (Object.keys(profileUpdates).length > 0) {
       await updateProfile(auth.currentUser, profileUpdates);
-      // Force a refresh of the user object to get the latest data
       await auth.currentUser.reload();
     }
   
@@ -147,6 +146,7 @@ export default function EditProfilePage() {
         title: t('editProfileErrorTitle'),
         description: t('editProfileErrorDescription'),
       });
+    } finally {
       setIsSaving(false);
     }
   };
