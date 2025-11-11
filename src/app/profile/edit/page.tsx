@@ -96,73 +96,58 @@ export default function EditProfilePage() {
   
   const handleSave = async () => {
     if (!user || !firestore || !auth.currentUser) return;
-  
+
     setIsSaving(true);
-  
-    // Prepare data for Firestore and Auth updates
+
     const firestoreUpdateData: any = {
-      gender: gender,
-      birthDate: birthDate ? birthDate.toISOString().split('T')[0] : null,
-      displayName: displayName,
-      updatedAt: serverTimestamp(),
+        gender: gender,
+        birthDate: birthDate ? birthDate.toISOString().split('T')[0] : null,
+        displayName: displayName,
+        updatedAt: serverTimestamp(),
     };
-  
-    const authUpdateData: { displayName?: string; photoURL?: string } = {};
-  
-    if (displayName !== user.displayName) {
-      authUpdateData.displayName = displayName;
-    }
-  
-    // Immediately save text-based data
+
     setDocumentNonBlocking(doc(firestore, 'users', user.uid), firestoreUpdateData, { merge: true });
-    if(authUpdateData.displayName) {
-        await updateProfile(auth.currentUser, { displayName: authUpdateData.displayName });
+
+    if (displayName !== user.displayName) {
+        await updateProfile(auth.currentUser, { displayName });
     }
-  
-    // Handle photo upload in the background
+
     if (newPhoto) {
-      const storage = getStorage();
-      const storageRef = ref(storage, `profile-pictures/${user.uid}`);
-      
-      uploadString(storageRef, newPhoto, 'data_url')
-        .then(snapshot => getDownloadURL(snapshot.ref))
-        .then(downloadURL => {
-          // Once uploaded, update auth and firestore with the new URL
-          const photoAuthUpdate = { photoURL: downloadURL };
-          const photoFirestoreUpdate = { photoURL: downloadURL, updatedAt: serverTimestamp() };
-  
-          if (auth.currentUser) {
-            updateProfile(auth.currentUser, photoAuthUpdate)
-              .then(() => auth.currentUser?.reload()) // Reload user data to get the latest profile
-              .catch(error => {
-                 console.error("Error updating auth profile with photo:", error);
-              });
-          }
-          setDocumentNonBlocking(doc(firestore, 'users', user.uid), photoFirestoreUpdate, { merge: true });
-        })
-        .catch(error => {
-          console.error("Error uploading photo:", error);
-          toast({
-              variant: "destructive",
-              title: t('editProfileErrorTitle'),
-              description: "Failed to upload new profile picture.",
-          });
-        });
-    } else {
-        // If no new photo, reload might still be needed if name changed
-        if(authUpdateData.displayName) {
-           await auth.currentUser.reload();
+        const storage = getStorage();
+        const storageRef = ref(storage, `profile-pictures/${user.uid}`);
+        
+        try {
+            const snapshot = await uploadString(storageRef, newPhoto, 'data_url');
+            const downloadURL = await getDownloadURL(snapshot.ref);
+
+            await updateProfile(auth.currentUser, { photoURL: downloadURL });
+            setDocumentNonBlocking(doc(firestore, 'users', user.uid), { photoURL: downloadURL, updatedAt: serverTimestamp() }, { merge: true });
+            
+        } catch (error) {
+            console.error("Error uploading photo:", error);
+            toast({
+                variant: "destructive",
+                title: t('editProfileErrorTitle'),
+                description: "Failed to upload new profile picture.",
+            });
+            setIsSaving(false);
+            return;
         }
     }
-    
+
+    try {
+        await auth.currentUser.reload();
+    } catch (error) {
+        console.error("Error reloading user data:", error);
+    }
+
     toast({
-      title: t('editProfileSuccessTitle'),
-      description: t('editProfileSuccessDescription'),
+        title: t('editProfileSuccessTitle'),
+        description: t('editProfileSuccessDescription'),
     });
-  
+
     router.push('/profile');
-    // No need to setIsSaving(false) here because we are navigating away.
-  };
+};
 
   const isLoading = isUserLoading || isProfileLoading;
 
