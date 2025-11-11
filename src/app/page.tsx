@@ -1,34 +1,7 @@
 'use client';
-import dynamic from 'next/dynamic';
+import { CommunityList } from "./components/community-list";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useLanguage } from "./components/language-provider";
-import { Skeleton } from '@/components/ui/skeleton';
-
-const CommunityList = dynamic(
-  () => import('./components/community-list').then((mod) => mod.CommunityList),
-  { 
-    ssr: false,
-    loading: () => (
-      <div className="space-y-4">
-        <h2 className="text-2xl font-bold">Communities</h2>
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {[...Array(3)].map((_, i) => (
-              <Card key={i}>
-                  <CardHeader>
-                      <Skeleton className="h-6 w-1/2" />
-                  </CardHeader>
-                  <CardContent>
-                      <Skeleton className="h-4 w-full" />
-                      <Skeleton className="h-4 w-3/4 mt-2" />
-                  </CardContent>
-              </Card>
-          ))}
-        </div>
-      </div>
-    )
-  }
-);
-
 
 export default function Home() {
   const { t } = useLanguage();
