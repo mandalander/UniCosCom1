@@ -1,22 +1,9 @@
 /**
  * @fileoverview Firestore Security Rules for Prototyper.
- *
- * This is a temporary, permissive ruleset for debugging.
- * It allows public read access to the entire database.
- *
  */
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-
-    /**
-     * @description Grants admin privileges based on the existence of a document in the /roles_admin collection.
-     * @path /roles_admin/{userId}
-     */
-    match /roles_admin/{userId} {
-      allow get, list: if isAdmin(userId);
-      allow create, update, delete: if isAdmin(userId);
-    }
 
     /**
      * @description Grants access to user-specific data only to the authenticated user.
@@ -57,24 +44,6 @@ service cloud.firestore {
      */
     function isOwner(userId) {
       return isSignedIn() && request.auth.uid == userId;
-    }
-
-    /**
-     * @description Checks if the request is made by the owner of an EXISTING document.
-     * @param {string} userId The user ID to compare against the request's auth UID.
-     * @return {bool} True if the user ID matches the auth UID and the resource exists, false otherwise.
-     */
-    function isExistingOwner(userId) {
-      return isOwner(userId) && resource != null;
-    }
-
-    /**
-     * @description Checks if the user has admin privileges by checking the document exists in roles_admin collection.
-     * @param {string} userId The user ID to check for admin privileges.
-     * @return {bool} True if the roles_admin document exists, false otherwise.
-     */
-    function isAdmin(userId) {
-      return isSignedIn() && exists(/databases/$(database)/documents/roles_admin/$(userId));
     }
   }
 }
