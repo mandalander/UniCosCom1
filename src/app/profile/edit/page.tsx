@@ -91,18 +91,14 @@ export default function EditProfilePage() {
   const handleSave = () => {
     if (!user || !firestore || !auth.currentUser) return;
   
-    setIsSaving(true);
-  
     // 1. Update non-image data immediately in a non-blocking way
     const firestoreData: any = {
-      displayName: displayName,
-      gender,
+      gender: gender,
       birthDate: birthDate ? birthDate.toISOString().split('T')[0] : null,
+      displayName: displayName
     };
   
-    if (Object.keys(firestoreData).length > 0) {
-      setDocumentNonBlocking(doc(firestore, 'users', user.uid), firestoreData, { merge: true });
-    }
+    setDocumentNonBlocking(doc(firestore, 'users', user.uid), firestoreData, { merge: true });
   
     if (displayName !== user.displayName) {
         if(auth.currentUser) {
@@ -110,14 +106,14 @@ export default function EditProfilePage() {
         }
     }
   
-    // 2. If there's a new photo, upload it in the background
+    // 2. If there's a new photo, upload it and update URLs in the background
     if (newPhoto) {
       const storage = getStorage();
       const storageRef = ref(storage, `profile-pictures/${user.uid}`);
       
       uploadString(storageRef, newPhoto, 'data_url').then(snapshot => {
         getDownloadURL(snapshot.ref).then(downloadURL => {
-          // 3. Once uploaded, update the photoURL in Auth and Firestore in the background
+          // 3. Once uploaded, update photoURL in Auth and Firestore (non-blocking)
           if (auth.currentUser) {
             updateProfile(auth.currentUser, { photoURL: downloadURL }).then(() => {
                 auth.currentUser?.reload();
@@ -132,12 +128,7 @@ export default function EditProfilePage() {
             title: t('editProfileErrorTitle'),
             description: "Failed to upload new profile picture.",
         });
-      }).finally(() => {
-        // This part is just for the case of upload finishing before navigation
-        setIsSaving(false); 
       });
-    } else {
-        setIsSaving(false);
     }
   
     // 4. Immediately give feedback and navigate away
