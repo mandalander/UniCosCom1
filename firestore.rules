@@ -1,24 +1,18 @@
 /**
  * @fileoverview Firestore Security Rules for Prototyper.
  *
- * Core Philosophy:
- * This ruleset prioritizes strict user-ownership and admin-based authorization.
- * Data shapes are not strictly enforced to allow for rapid iteration.
- *
- * Data Structure:
- * - /roles_admin/{userId}: Admin role assignments. Document existence grants admin privileges.
- * - /users/{userId}: User profile data, accessible only by the owning user.
- * - /communities/{communityId}: Publicly readable community data.
- *
- * Key Security Decisions:
- * - User listing is disallowed to protect privacy.
- * - Write operations without authentication are strictly forbidden.
- * - Data validation is limited to authorization-critical fields to enable flexible prototyping.
+ * This is a temporary, permissive ruleset for debugging.
+ * It allows public read access to the entire database.
  *
  */
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
+    
+    // Allow public read access to all documents
+    match /{document=**} {
+      allow read: if true;
+    }
 
     /**
      * @description Grants admin privileges based on the existence of a document in the /roles_admin collection.
