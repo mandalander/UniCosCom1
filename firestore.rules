@@ -8,6 +8,7 @@
  * Data Structure:
  * - /roles_admin/{userId}: Admin role assignments. Document existence grants admin privileges.
  * - /users/{userId}: User profile data, accessible only by the owning user.
+ * - /communities/{communityId}: Publicly readable community data.
  *
  * Key Security Decisions:
  * - User listing is disallowed to protect privacy.
@@ -21,14 +22,6 @@ service cloud.firestore {
     /**
      * @description Grants admin privileges based on the existence of a document in the /roles_admin collection.
      * @path /roles_admin/{userId}
-     * @allow (get) User with UID 'user123' can read if document /roles_admin/user123 exists.
-     * @allow (list) User with UID 'user123' can list if document /roles_admin/user123 exists.
-     * @allow (create) User with UID 'user123' can create if they are an admin.
-     * @allow (update) User with UID 'user123' can update if they are an admin.
-     * @allow (delete) User with UID 'user123' can delete if they are an admin.
-     * @deny (get) User without UID 'user123' cannot read document /roles_admin/user123.
-     * @deny (create) User without admin privileges cannot create a document.
-     * @principle Enforces admin-only write access based on document existence in /roles_admin.
      */
     match /roles_admin/{userId} {
       allow get, list: if isAdmin(userId);
@@ -38,14 +31,6 @@ service cloud.firestore {
     /**
      * @description Grants access to user-specific data only to the authenticated user.
      * @path /users/{userId}
-     * @allow (get) User with UID 'user123' can read their own profile at /users/user123.
-     * @allow (list) User with UID 'user123' can list documents in their own profile at /users/user123.
-     * @allow (create) User with UID 'user123' can create their own profile at /users/user123 if the user ID matches their auth UID.
-     * @allow (update) User with UID 'user123' can update their own profile at /users/user123.
-     * @allow (delete) User with UID 'user123' can delete their own profile at /users/user123.
-     * @deny (get) User with UID 'user456' cannot read user 'user123's profile at /users/user123.
-     * @deny (create) User with UID 'user456' cannot create user 'user123's profile at /users/user123.
-     * @principle Enforces document ownership for all operations in the /users collection.
      */
     match /users/{userId} {
       allow get, list: if isOwner(userId);
@@ -54,9 +39,18 @@ service cloud.firestore {
       allow delete: if isExistingOwner(userId);
     }
 
+    /**
+     * @description Defines rules for the 'communities' collection.
+     * @path /communities/{communityId}
+     */
     match /communities/{communityId} {
+      // Allow public read access to all communities
       allow read: if true;
+
+      // Allow authenticated users to create communities
       allow create: if isSignedIn() && request.resource.data.creatorId == request.auth.uid;
+      
+      // Allow the community owner to update or delete it
       allow update, delete: if isCommunityOwner(communityId);
     }
 
@@ -97,6 +91,11 @@ service cloud.firestore {
       return isSignedIn() && exists(/databases/$(database)/documents/roles_admin/$(userId));
     }
 
+    /**
+     * @description Checks if the current user is the owner of a community.
+     * @param {string} communityId The ID of the community document.
+     * @return {bool} True if the user is the owner, false otherwise.
+     */
     function isCommunityOwner(communityId) {
       return isSignedIn() && resource.data.creatorId == request.auth.uid;
     }
