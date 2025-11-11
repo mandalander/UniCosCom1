@@ -10,6 +10,7 @@ import {
   SidebarMenu,
   SidebarMenuItem,
   SidebarMenuButton,
+  SidebarFooter,
 } from '@/components/ui/sidebar';
 import { Button } from '@/components/ui/button';
 import { useLanguage } from './language-provider';
@@ -25,8 +26,10 @@ export function AppSidebar() {
   const allMenuItems = [
     { href: '/', label: t('main'), icon: Home, requiresAuth: false },
     { href: '/explore', label: t('explore'), icon: Compass, requiresAuth: false },
-    { href: '/settings', label: t('settings'), icon: Settings, requiresAuth: false },
   ];
+  
+  const settingsMenuItem = { href: '/settings', label: t('settings'), icon: Settings, requiresAuth: false };
+
 
   useEffect(() => {
     setMounted(true);
@@ -82,6 +85,22 @@ export function AppSidebar() {
           ))}
         </SidebarMenu>
       </SidebarContent>
+      <SidebarFooter>
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <SidebarMenuButton
+              asChild
+              isActive={pathname === settingsMenuItem.href}
+              tooltip={settingsMenuItem.label}
+            >
+              <Link href={settingsMenuItem.href}>
+                <settingsMenuItem.icon />
+                <span>{settingsMenuItem.label}</span>
+              </Link>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        </SidebarMenu>
+      </SidebarFooter>
     </Sidebar>
   );
 }
