@@ -2,26 +2,14 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useLanguage } from "./language-provider";
-import { useCollection, useFirestore, useMemoFirebase } from "@/firebase";
-import { collection, query, Query } from "firebase/firestore";
-import { Skeleton } from "@/components/ui/skeleton";
-
-type Community = {
-  id: string;
-  name: string;
-  description: string;
-};
+import { communities as placeholderCommunities } from "@/lib/placeholder-data";
+import type { Community } from "@/lib/placeholder-data";
 
 export function CommunityList() {
   const { t } = useLanguage();
-  const firestore = useFirestore();
-
-  const communitiesQuery = useMemoFirebase(() => {
-    if (!firestore) return null;
-    return query(collection(firestore, 'communities')) as Query<Community>;
-  }, [firestore]);
-
-  const { data: communities, isLoading, error } = useCollection<Community>(communitiesQuery);
+  const communities: Community[] = placeholderCommunities;
+  const isLoading = false;
+  const error = null;
 
   return (
     <div className="space-y-4">
@@ -31,11 +19,11 @@ export function CommunityList() {
             {[...Array(3)].map((_, i) => (
                 <Card key={i}>
                     <CardHeader>
-                        <Skeleton className="h-6 w-1/2" />
+                        <div className="h-6 w-1/2 bg-muted animate-pulse rounded-md" />
                     </CardHeader>
                     <CardContent>
-                        <Skeleton className="h-4 w-full" />
-                        <Skeleton className="h-4 w-3/4 mt-2" />
+                        <div className="h-4 w-full bg-muted animate-pulse rounded-md" />
+                        <div className="h-4 w-3/4 mt-2 bg-muted animate-pulse rounded-md" />
                     </CardContent>
                 </Card>
             ))}

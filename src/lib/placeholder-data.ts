@@ -1,5 +1,11 @@
 
-export const communities = [
+export type Community = {
+  id: string;
+  name: string;
+  description: string;
+};
+
+export const communities: Community[] = [
   {
     id: '1',
     name: 'React Developers',
