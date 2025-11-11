@@ -16,8 +16,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { useLanguage } from './language-provider';
-import { useFirestore, useUser, errorEmitter, FirestorePermissionError } from '@/firebase';
-import { collection, serverTimestamp, addDoc } from 'firebase/firestore';
+import { useFirestore, useUser, errorEmitter, FirestorePermissionError, addDocumentNonBlocking } from '@/firebase';
+import { collection, serverTimestamp } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
 
 export function CreateCommunityDialog({ children }: { children: React.ReactNode }) {
@@ -31,7 +31,7 @@ export function CreateCommunityDialog({ children }: { children: React.ReactNode 
   const [description, setDescription] = useState('');
   const [isCreating, setIsCreating] = useState(false);
 
-  const handleCreate = () => {
+  const handleCreate = async () => {
     if (!user || !firestore) {
       toast({
         variant: "destructive",
@@ -59,29 +59,24 @@ export function CreateCommunityDialog({ children }: { children: React.ReactNode 
       createdAt: serverTimestamp(),
     };
 
-    addDoc(communitiesColRef, communityData)
-      .then(() => {
-        toast({
-          title: "Sukces!",
-          description: `Społeczność "${communityName}" została utworzona.`,
-        });
-        
-        setCommunityName('');
-        setDescription('');
-        setOpen(false);
-      })
-      .catch((error) => {
-        const permissionError = new FirestorePermissionError({
-          path: communitiesColRef.path,
-          operation: 'create',
-          requestResourceData: communityData,
-        });
-        errorEmitter.emit('permission-error', permissionError);
-        // We don't show a generic toast here, as the listener will handle it.
-      })
-      .finally(() => {
-        setIsCreating(false);
+    try {
+      await addDocumentNonBlocking(communitiesColRef, communityData);
+      
+      toast({
+        title: "Sukces!",
+        description: `Społeczność "${communityName}" została utworzona.`,
       });
+      
+      setCommunityName('');
+      setDescription('');
+      setOpen(false);
+    } catch (error) {
+        // The non-blocking function will emit the error, so we don't need to do it here.
+        // We also don't show a generic toast, as the listener will handle it.
+        console.error("This should not be reached if non-blocking logic is correct", error);
+    } finally {
+        setIsCreating(false);
+    }
   };
 
   return (
