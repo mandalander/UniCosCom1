@@ -87,59 +87,70 @@ export default function EditProfilePage() {
     }
   };
 
-  const handleSave = async () => {
+  const handleSave = () => {
     if (!user || !firestore || !auth.currentUser) return;
 
     setIsSaving(true);
-    try {
-      let finalPhotoURL = user.photoURL;
+    
+    const updateUserData = (photoUrlToSave: string | null) => {
+      const currentUser = auth.currentUser;
+      if (!currentUser) return;
 
-      if (newPhoto) {
-        const storage = getStorage();
-        const storageRef = ref(storage, `profile-pictures/${user.uid}`);
-        await uploadString(storageRef, newPhoto, 'data_url');
-        finalPhotoURL = await getDownloadURL(storageRef);
-      }
-      
       const profileUpdates: { displayName?: string, photoURL?: string } = {};
       if (displayName !== user.displayName) {
         profileUpdates.displayName = displayName;
       }
-      if (finalPhotoURL !== user.photoURL) {
-        profileUpdates.photoURL = finalPhotoURL;
+      if (photoUrlToSave !== user.photoURL) {
+        profileUpdates.photoURL = photoUrlToSave as string;
       }
 
       if (Object.keys(profileUpdates).length > 0) {
-        await updateProfile(auth.currentUser, profileUpdates);
+        updateProfile(currentUser, profileUpdates).catch(error => {
+            console.error("Error updating auth profile:", error);
+        });
       }
-
 
       const userDocRef = doc(firestore, 'users', user.uid);
       const profileData = {
         displayName: displayName,
-        photoURL: finalPhotoURL,
+        photoURL: photoUrlToSave,
         gender,
         birthDate: birthDate ? birthDate.toISOString().split('T')[0] : null,
       };
       
       setDocumentNonBlocking(userDocRef, profileData, { merge: true });
+    };
 
-      toast({
-        title: t('editProfileSuccessTitle'),
-        description: t('editProfileSuccessDescription'),
-      });
-      router.push('/profile');
-    } catch (error) {
-      console.error('Error updating profile:', error);
-      toast({
-        variant: 'destructive',
-        title: t('editProfileErrorTitle'),
-        description: t('editProfileErrorDescription'),
-      });
-    } finally {
-      setIsSaving(false);
+    if (newPhoto) {
+      const storage = getStorage();
+      const storageRef = ref(storage, `profile-pictures/${user.uid}`);
+      uploadString(storageRef, newPhoto, 'data_url')
+        .then(snapshot => getDownloadURL(snapshot.ref))
+        .then(downloadURL => {
+          updateUserData(downloadURL);
+        })
+        .catch(error => {
+          console.error('Error uploading photo:', error);
+          toast({
+            variant: 'destructive',
+            title: t('editProfileErrorTitle'),
+            description: t('editProfileErrorDescription'),
+          });
+          setIsSaving(false);
+        });
+    } else {
+      updateUserData(user.photoURL);
     }
-  };
+
+    toast({
+      title: t('editProfileSuccessTitle'),
+      description: t('editProfileSuccessDescription'),
+    });
+    
+    // We navigate away immediately, while the data saves in the background.
+    router.push('/profile');
+};
+
 
   const isLoading = isUserLoading || isProfileLoading;
 
