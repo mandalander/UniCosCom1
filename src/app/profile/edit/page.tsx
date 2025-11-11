@@ -62,12 +62,13 @@ export default function EditProfilePage() {
 
     setIsSaving(true);
     try {
-      if (user.displayName !== displayName) {
-        await updateProfile(user, { displayName });
+      if (auth.currentUser && auth.currentUser.displayName !== displayName) {
+        await updateProfile(auth.currentUser, { displayName });
       }
 
       const userDocRef = doc(firestore, 'users', user.uid);
       const profileData = {
+        displayName: displayName,
         gender,
         birthDate: birthDate ? birthDate.toISOString().split('T')[0] : null,
       };
