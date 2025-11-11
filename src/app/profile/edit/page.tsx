@@ -102,7 +102,7 @@ export default function EditProfilePage() {
     setIsSaving(true);
   
     try {
-      let finalPhotoUrl = user.photoURL;
+      let finalPhotoUrl = userProfile?.photoURL || user?.photoURL;
       
       // 1. If a new photo is selected, upload it to Storage
       if (newPhotoDataUrl) {
@@ -154,14 +154,14 @@ export default function EditProfilePage() {
 
   const isLoading = isUserLoading || isProfileLoading;
 
-  if (isLoading && !userProfile) {
+  if (isLoading && !user) {
     return <div>{t('profileLoading')}</div>;
   }
 
-  if (!user) {
+  if (!isUserLoading && !user) {
     return null;
   }
-
+  
   return (
     <Card>
       <CardHeader>
@@ -175,7 +175,7 @@ export default function EditProfilePage() {
             <div className='flex items-center gap-4'>
                 <Avatar className="h-20 w-20">
                     <AvatarImage src={newPhotoDataUrl || photoURL || undefined} />
-                    <AvatarFallback>{getInitials(displayName, user.email)}</AvatarFallback>
+                    <AvatarFallback>{getInitials(displayName, user?.email)}</AvatarFallback>
                 </Avatar>
                 <Button variant="outline" onClick={() => fileInputRef.current?.click()} disabled={isSaving}>
                     {t('changePhoto')}
