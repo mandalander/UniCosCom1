@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { useUser, useAuth, useFirestore, useDoc, setDocumentNonBlocking, useMemoFirebase } from '@/firebase';
 import { updateProfile } from 'firebase/auth';
-import { doc } from 'firebase/firestore';
+import { doc, serverTimestamp } from 'firebase/firestore';
 import { getStorage, ref, uploadString, getDownloadURL } from 'firebase/storage';
 import { Button } from '@/components/ui/button';
 import {
@@ -94,67 +94,84 @@ export default function EditProfilePage() {
     }
   };
   
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!user || !firestore || !auth.currentUser) return;
   
     setIsSaving(true);
   
-    const firestoreData: any = {
+    // Prepare data for Firestore and Auth updates
+    const firestoreUpdateData: any = {
       gender: gender,
       birthDate: birthDate ? birthDate.toISOString().split('T')[0] : null,
-      displayName: displayName
+      displayName: displayName,
+      updatedAt: serverTimestamp(),
     };
   
+    const authUpdateData: { displayName?: string; photoURL?: string } = {};
+  
     if (displayName !== user.displayName) {
-        if(auth.currentUser) {
-            updateProfile(auth.currentUser, { displayName });
-        }
+      authUpdateData.displayName = displayName;
     }
   
-    let photoUploadPromise = Promise.resolve();
+    // Immediately save text-based data
+    setDocumentNonBlocking(doc(firestore, 'users', user.uid), firestoreUpdateData, { merge: true });
+    if(authUpdateData.displayName) {
+        await updateProfile(auth.currentUser, { displayName: authUpdateData.displayName });
+    }
   
+    // Handle photo upload in the background
     if (newPhoto) {
       const storage = getStorage();
       const storageRef = ref(storage, `profile-pictures/${user.uid}`);
       
-      photoUploadPromise = uploadString(storageRef, newPhoto, 'data_url').then(snapshot => {
-        return getDownloadURL(snapshot.ref).then(downloadURL => {
-          firestoreData.photoURL = downloadURL;
+      uploadString(storageRef, newPhoto, 'data_url')
+        .then(snapshot => getDownloadURL(snapshot.ref))
+        .then(downloadURL => {
+          // Once uploaded, update auth and firestore with the new URL
+          const photoAuthUpdate = { photoURL: downloadURL };
+          const photoFirestoreUpdate = { photoURL: downloadURL, updatedAt: serverTimestamp() };
+  
           if (auth.currentUser) {
-            return updateProfile(auth.currentUser, { photoURL: downloadURL }).then(() => {
-                return auth.currentUser?.reload();
-            });
+            updateProfile(auth.currentUser, photoAuthUpdate)
+              .then(() => auth.currentUser?.reload()) // Reload user data to get the latest profile
+              .catch(error => {
+                 console.error("Error updating auth profile with photo:", error);
+              });
           }
+          setDocumentNonBlocking(doc(firestore, 'users', user.uid), photoFirestoreUpdate, { merge: true });
+        })
+        .catch(error => {
+          console.error("Error uploading photo:", error);
+          toast({
+              variant: "destructive",
+              title: t('editProfileErrorTitle'),
+              description: "Failed to upload new profile picture.",
+          });
         });
-      }).catch(error => {
-        console.error("Error uploading photo:", error);
-        toast({
-            variant: "destructive",
-            title: t('editProfileErrorTitle'),
-            description: "Failed to upload new profile picture.",
-        });
-        throw error;
-      });
+    } else {
+        // If no new photo, reload might still be needed if name changed
+        if(authUpdateData.displayName) {
+           await auth.currentUser.reload();
+        }
     }
-  
-    photoUploadPromise.then(() => {
-      setDocumentNonBlocking(doc(firestore, 'users', user.uid), firestoreData, { merge: true });
-  
-      toast({
-        title: t('editProfileSuccessTitle'),
-        description: t('editProfileSuccessDescription'),
-      });
-      router.push('/profile');
-    }).finally(() => {
-        setIsSaving(false);
+    
+    toast({
+      title: t('editProfileSuccessTitle'),
+      description: t('editProfileSuccessDescription'),
     });
+  
+    router.push('/profile');
+    // No need to setIsSaving(false) here because we are navigating away.
   };
-
 
   const isLoading = isUserLoading || isProfileLoading;
 
-  if (isLoading || !user) {
+  if (isLoading) {
     return <div>{t('profileLoading')}</div>;
+  }
+
+  if (!user) {
+    return null;
   }
 
   return (
