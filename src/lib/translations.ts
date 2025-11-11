@@ -9,14 +9,18 @@ export const translations = {
 
     // Top Nav Bar
     login: 'Zaloguj się',
+    logout: 'Wyloguj się',
     
     // Login Page
     loginTitle: 'Logowanie',
     loginDescription: 'Podaj swój e-mail poniżej, aby zalogować się na swoje konto.',
+    registerDescription: 'Podaj swój e-mail i hasło, aby utworzyć konto.',
     emailLabel: 'Email',
     passwordLabel: 'Hasło',
     noAccount: 'Nie masz konta?',
+    alreadyHaveAccount: 'Masz już konto?',
     register: 'Zarejestruj się',
+    signInWithGoogle: 'Zaloguj się z Google',
 
     // Home Page
     homeTitle: 'Witaj w Nawigatorze Aplikacji',
@@ -34,6 +38,10 @@ export const translations = {
     profileTitle: 'Mój profil',
     profileDescription: 'To jest Twoja osobista strona profilowa.',
     profileContent: 'Informacje o profilu użytkownika zostaną wyświetlone tutaj.',
+    profileNotLoggedIn: 'Zaloguj się, aby zobaczyć swój profil.',
+    profileLoading: 'Ładowanie profilu...',
+    profileEmail: 'Email',
+
 
     // Settings Page
     settingsTitle: 'Ustawienia',
@@ -61,14 +69,18 @@ export const translations = {
 
     // Top Nav Bar
     login: 'Log in',
+    logout: 'Log out',
 
     // Login Page
     loginTitle: 'Login',
     loginDescription: 'Enter your email below to log in to your account.',
+    registerDescription: 'Enter your email and password to create an account.',
     emailLabel: 'Email',
     passwordLabel: 'Password',
     noAccount: "Don't have an account?",
+    alreadyHaveAccount: 'Already have an account?',
     register: 'Sign up',
+    signInWithGoogle: 'Sign in with Google',
 
     // Home Page
     homeTitle: 'Welcome to the App Navigator',
@@ -86,6 +98,10 @@ export const translations = {
     profileTitle: 'My Profile',
     profileDescription: 'This is your personal profile page.',
     profileContent: 'User profile information will be displayed here.',
+    profileNotLoggedIn: 'Log in to see your profile.',
+    profileLoading: 'Loading profile...',
+    profileEmail: 'Email',
+
 
     // Settings Page
     settingsTitle: 'Settings',

@@ -6,6 +6,7 @@ import { AppSidebar } from './components/app-sidebar';
 import { TopNavBar } from './components/top-nav-bar';
 import { ThemeProvider } from './components/theme-provider';
 import { LanguageProvider } from './components/language-provider';
+import { FirebaseClientProvider } from '@/firebase';
 
 export const metadata: Metadata = {
   title: 'Nawigator Aplikacji',
@@ -32,14 +33,16 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <LanguageProvider>
-            <SidebarProvider>
-              <AppSidebar />
-              <SidebarInset>
-                <TopNavBar />
-                <div className="p-4 sm:p-6 lg:p-8">{children}</div>
-              </SidebarInset>
-            </SidebarProvider>
-            <Toaster />
+            <FirebaseClientProvider>
+              <SidebarProvider>
+                <AppSidebar />
+                <SidebarInset>
+                  <TopNavBar />
+                  <div className="p-4 sm:p-6 lg:p-8">{children}</div>
+                </SidebarInset>
+              </SidebarProvider>
+              <Toaster />
+            </FirebaseClientProvider>
           </LanguageProvider>
         </ThemeProvider>
       </body>
