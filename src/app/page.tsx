@@ -4,6 +4,7 @@ import { useLanguage } from "./components/language-provider";
 import { useCollection, useFirestore, useMemoFirebase } from "@/firebase";
 import { collection, query, orderBy } from "firebase/firestore";
 import { Skeleton } from "@/components/ui/skeleton";
+import Link from "next/link";
 
 type Community = {
   id: string;
