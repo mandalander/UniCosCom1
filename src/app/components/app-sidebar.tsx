@@ -23,7 +23,6 @@ export function AppSidebar() {
   const menuItems = [
     { href: '/', label: t('main'), icon: Home },
     { href: '/explore', label: t('explore'), icon: Compass },
-    { href: '/profile', label: t('profile'), icon: User },
     { href: '/settings', label: t('settings'), icon: Settings },
   ];
 
