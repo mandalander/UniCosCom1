@@ -14,9 +14,10 @@ import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { doc } from 'firebase/firestore';
 import { format } from 'date-fns';
+import { pl } from 'date-fns/locale';
 
 export default function ProfilePage() {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const { user, isUserLoading } = useUser();
   const firestore = useFirestore();
 
@@ -28,6 +29,14 @@ export default function ProfilePage() {
   const { data: userProfile, isLoading: isProfileLoading } = useDoc(userDocRef);
 
   const isLoading = isUserLoading || isProfileLoading;
+
+  const formatDate = (dateString: string) => {
+    try {
+      return format(new Date(dateString), 'P', { locale: language === 'pl' ? pl : undefined });
+    } catch (e) {
+      return dateString;
+    }
+  };
 
   return (
     <Card>
@@ -59,7 +68,7 @@ export default function ProfilePage() {
               <strong>{t('profileGender')}:</strong> {userProfile?.gender ? t(`gender${userProfile.gender.charAt(0).toUpperCase() + userProfile.gender.slice(1)}` as any) : t('profileNotSet')}
             </p>
              <p>
-              <strong>{t('profileBirthDate')}:</strong> {userProfile?.birthDate ? format(new Date(userProfile.birthDate), 'P') : t('profileNotSet')}
+              <strong>{t('profileBirthDate')}:</strong> {userProfile?.birthDate ? formatDate(userProfile.birthDate) : t('profileNotSet')}
             </p>
           </div>
         ) : (

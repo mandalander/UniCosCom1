@@ -24,9 +24,10 @@ import { CalendarIcon } from 'lucide-react';
 import { Calendar } from '@/components/ui/calendar';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
+import { pl } from 'date-fns/locale';
 
 export default function EditProfilePage() {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const { user, isUserLoading } = useUser();
   const auth = useAuth();
   const firestore = useFirestore();
@@ -152,13 +153,13 @@ export default function EditProfilePage() {
                   <Button
                     variant={"outline"}
                     className={cn(
-                      "w-[240px] justify-start text-left font-normal",
+                      "w-[200px] justify-start text-left font-normal",
                       !birthDate && "text-muted-foreground"
                     )}
                     disabled={isSaving}
                   >
                     <CalendarIcon className="mr-2 h-4 w-4" />
-                    {birthDate ? format(birthDate, "PPP") : <span>{t('editProfileBirthDatePlaceholder')}</span>}
+                    {birthDate ? format(birthDate, "PPP", { locale: language === 'pl' ? pl : undefined }) : <span>{t('editProfileBirthDatePlaceholder')}</span>}
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-auto p-0">
@@ -170,6 +171,7 @@ export default function EditProfilePage() {
                     captionLayout="dropdown-buttons"
                     fromYear={1900}
                     toYear={new Date().getFullYear()}
+                    locale={language === 'pl' ? pl : undefined}
                   />
                 </PopoverContent>
               </Popover>
