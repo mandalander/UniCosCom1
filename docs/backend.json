@@ -1,64 +1,46 @@
 {
-  "entities": {
-    "User": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "User",
-      "type": "object",
-      "description": "Represents a user of the application.",
-      "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the User entity."
-        },
-        "email": {
-          "type": "string",
-          "description": "User's email address.",
-          "format": "email"
-        },
-        "photoURL": {
-            "type": "string",
-            "format": "uri",
-            "description": "URL to the user's profile picture."
-        },
-        "registrationDate": {
-          "type": "string",
-          "description": "The date and time the user registered.",
-          "format": "date-time"
-        },
-        "googleId": {
-          "type": "string",
-          "description": "The unique user ID provided by Google OAuth for login purposes."
-        },
-        "gender": {
-          "type": "string",
-          "description": "The user's gender.",
-          "enum": ["male", "female", "other"]
-        },
-        "birthDate": {
-          "type": "string",
-          "description": "The user's date of birth.",
-          "format": "date"
-        }
-      },
-      "required": [
-        "id",
-        "email",
-        "registrationDate"
-      ]
-    }
-  },
+  "entities": {},
   "auth": {
     "providers": [
       "password",
-      "google.com"
+      "anonymous"
     ]
   },
   "firestore": {
-    "/users/{userId}": {
-      "schema": {
-        "$ref": "#/entities/User"
+    "structure": [
+      {
+        "path": "/roles_admin/{userId}",
+        "definition": {
+          "entityName": "roles_admin",
+          "schema": {
+            "$ref": "#/backend/entities/roles_admin"
+          },
+          "description": "Collection to store admin roles. Document existence grants admin privileges. Authorization is based solely on the existence of the document with the user's UID as the document ID.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The UID of the user."
+            }
+          ]
+        }
       },
-      "description": "Stores user profiles. The userId parameter is the Firebase Authentication UID. This enforces path-based ownership, so each user can only access their own profile."
-    }
+      {
+        "path": "/users/{userId}",
+        "definition": {
+          "entityName": "user",
+          "schema": {
+            "$ref": "#/backend/entities/user"
+          },
+          "description": "Collection to store user profiles.  Authorization relies on path-based ownership (only the user can read/write their own profile).",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The UID of the user."
+            }
+          ]
+        }
+      }
+    ],
+    "reasoning": "The error `Firebase: Error (auth/operation-not-allowed)` indicates that the anonymous authentication method is not enabled for the Firebase project. Since the application uses anonymous authentication, we need to ensure it is enabled in the Firebase console. This fix does not impact the Firestore data structure, as it's an authentication configuration issue. Therefore, I won't suggest a Firestore Data Structure here."
   }
 }

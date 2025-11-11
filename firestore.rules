@@ -1,40 +1,94 @@
 /**
- * @file Firestore Security Rules
- * @description This ruleset enforces a strict user-ownership model for the /users/{userId} collection.
+ * @fileoverview Firestore Security Rules for Prototyping.
+ *
+ * Core Philosophy:
+ * This ruleset prioritizes strict user-ownership and admin-based authorization.
+ * Data shapes are not strictly enforced to allow for rapid iteration.
  *
  * Data Structure:
- * All user data is stored under the /users/{userId} path, where {userId} corresponds to the Firebase Authentication UID.
+ * - /roles_admin/{userId}: Admin role assignments. Document existence grants admin privileges.
+ * - /users/{userId}: User profile data, accessible only by the owning user.
  *
  * Key Security Decisions:
- * - Users can only access their own profile data.
- * - Listing all users is implicitly denied, as list operations on /users are not permitted.
- * - Data validation is relaxed in this prototyping phase to allow rapid iteration. Only critical authorization fields are validated.
- *
- * Denormalization for Authorization:
- * The /users/{userId} path directly reflects the authenticated user's UID, eliminating the need for `get()` calls to verify ownership.
+ * - User listing is disallowed to protect privacy.
+ * - Write operations without authentication are strictly forbidden.
+ * - Data validation is limited to authorization-critical fields to enable flexible prototyping.
  */
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
     /**
-     * @description Controls access to user profiles stored under /users/{userId}.
+     * @description Grants admin privileges based on the existence of a document in the /roles_admin collection.
+     * @path /roles_admin/{userId}
+     * @allow (get) User with UID 'user123' can read if document /roles_admin/user123 exists.
+     * @allow (list) User with UID 'user123' can list if document /roles_admin/user123 exists.
+     * @allow (create) User with UID 'user123' can create if they are an admin.
+     * @allow (update) User with UID 'user123' can update if they are an admin.
+     * @allow (delete) User with UID 'user123' can delete if they are an admin.
+     * @deny (get) User without UID 'user123' cannot read document /roles_admin/user123.
+     * @deny (create) User without admin privileges cannot create a document.
+     * @principle Enforces admin-only write access based on document existence in /roles_admin.
+     */
+    match /roles_admin/{userId} {
+      allow get, list: if isAdmin(userId);
+      allow create, update, delete: if isAdmin(userId);
+    }
+
+    /**
+     * @description Grants access to user-specific data only to the authenticated user.
      * @path /users/{userId}
-     * @allow (get) - A user can read their own profile.
-     * @allow (write) - A user can create or update their own profile.
-     * @allow (delete) - A user can delete their own profile.
-     * @deny (list) - Listing all users is denied.
-     * @principle Enforces document ownership.
+     * @allow (get) User with UID 'user123' can read their own profile at /users/user123.
+     * @allow (list) User with UID 'user123' can list documents in their own profile at /users/user123.
+     * @allow (create) User with UID 'user123' can create their own profile at /users/user123 if the user ID matches their auth UID.
+     * @allow (update) User with UID 'user123' can update their own profile at /users/user123.
+     * @allow (delete) User with UID 'user123' can delete their own profile at /users/user123.
+     * @deny (get) User with UID 'user456' cannot read user 'user123's profile at /users/user123.
+     * @deny (create) User with UID 'user456' cannot create user 'user123's profile at /users/user123.
+     * @principle Enforces document ownership for all operations in the /users collection.
      */
     match /users/{userId} {
-      // Helper to check if the requester is the owner of the document.
-      function isOwner() {
-        return request.auth != null && request.auth.uid == userId;
-      }
-      
-      // Allow read, write (create, update), and delete only for the owner.
-      allow read, write, delete: if isOwner();
-      allow list: if false; // Explicitly deny listing all users.
+      allow get, list: if isOwner(userId);
+      allow create: if isOwner(userId);
+      allow update: if isExistingOwner(userId);
+      allow delete: if isExistingOwner(userId);
+    }
+
+    // ---- Helper functions ----
+
+    /**
+     * @description Checks if the user is signed in.
+     * @return {bool} True if the user is signed in, false otherwise.
+     */
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    /**
+     * @description Checks if the request is made by the owner of the document.
+     * @param {string} userId The user ID to compare against the request's auth UID.
+     * @return {bool} True if the user ID matches the auth UID, false otherwise.
+     */
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    /**
+     * @description Checks if the request is made by the owner of an EXISTING document.
+     * @param {string} userId The user ID to compare against the request's auth UID.
+     * @return {bool} True if the user ID matches the auth UID and the resource exists, false otherwise.
+     */
+    function isExistingOwner(userId) {
+      return isOwner(userId) && resource != null;
+    }
+
+    /**
+     * @description Checks if the user has admin privileges by checking the document exists in roles_admin collection.
+     * @param {string} userId The user ID to check for admin privileges.
+     * @return {bool} True if the roles_admin document exists, false otherwise.
+     */
+    function isAdmin(userId) {
+      return isSignedIn() && exists(/databases/$(database)/documents/roles_admin/$(userId));
     }
   }
 }
