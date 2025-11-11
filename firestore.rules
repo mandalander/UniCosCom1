@@ -40,16 +40,25 @@ service cloud.firestore {
     }
 
     /**
-     * @description Defines rules for the 'communities' collection.
+     * @description Defines PUBLIC READ rules for the 'communities' collection.
      * @path /communities/{communityId}
      */
     match /communities/{communityId} {
       // Allow public read access to all communities
       allow read: if true;
-      // Allow authenticated users to create communities
-      allow create: if isSignedIn() && request.resource.data.creatorId == request.auth.uid;
-      // Allow the community owner to update or delete it
-      allow update, delete: if isCommunityOwner(communityId);
+    }
+
+    /**
+     * @description Defines WRITE rules for the 'communities' collection.
+     * @path /communities/{communityId}
+     */
+    match /communities/{communityId} {
+        // Disallow public writes.
+        allow write: if isSignedIn();
+        // Allow authenticated users to create communities
+        allow create: if request.resource.data.creatorId == request.auth.uid;
+        // Allow the community owner to update or delete it
+        allow update, delete: if isCommunityOwner(communityId);
     }
 
     // ---- Helper functions ----
