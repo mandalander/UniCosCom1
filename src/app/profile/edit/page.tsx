@@ -122,7 +122,7 @@ export default function EditProfilePage() {
       const firestoreUpdateData: any = {
         displayName: displayName,
         gender: gender,
-        birthDate: birthDate ? birthDate.toISOString().split('T')[0] : null,
+        birthDate: birthDate ? format(birthDate, 'yyyy-MM-dd') : null,
         photoURL: finalPhotoUrl,
         updatedAt: serverTimestamp(),
       };
