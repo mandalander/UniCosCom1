@@ -88,67 +88,66 @@ export default function EditProfilePage() {
     }
   };
 
-  const updateAuthAndFirestore = async (photoUrlToSave: string | null) => {
+  const updateAuthAndFirestore = (photoUrlToSave: string | null) => {
     if (!auth.currentUser) return;
   
     const profileUpdates: { displayName?: string; photoURL?: string } = {};
     if (displayName !== auth.currentUser.displayName) {
       profileUpdates.displayName = displayName;
     }
-    if (photoUrlToSave !== auth.currentUser.photoURL) {
-      profileUpdates.photoURL = photoUrlToSave ?? undefined;
+    if (photoUrlToSave && photoUrlToSave !== auth.currentUser.photoURL) {
+      profileUpdates.photoURL = photoUrlToSave;
     }
   
     if (Object.keys(profileUpdates).length > 0) {
-      await updateProfile(auth.currentUser, profileUpdates);
-      await auth.currentUser.reload();
+      updateProfile(auth.currentUser, profileUpdates).then(() => {
+        auth.currentUser?.reload();
+      });
     }
   
     const userDocRef = doc(firestore, 'users', auth.currentUser.uid);
-    const firestoreData = {
+    const firestoreData: {displayName: string, photoURL?: string | null, gender: string, birthDate: string | null} = {
       displayName: displayName,
-      photoURL: photoUrlToSave,
       gender,
       birthDate: birthDate ? birthDate.toISOString().split('T')[0] : null,
     };
+    if (photoUrlToSave) {
+        firestoreData.photoURL = photoUrlToSave;
+    }
   
     setDocumentNonBlocking(userDocRef, firestoreData, { merge: true });
   };
 
-  const handleSave = async () => {
+  const handleSave = () => {
     if (!user || !firestore || !auth.currentUser) return;
   
     setIsSaving(true);
   
-    try {
-      let finalPhotoURL = user.photoURL;
+    const firestoreData = {
+      displayName: displayName,
+      gender,
+      birthDate: birthDate ? birthDate.toISOString().split('T')[0] : null,
+    };
+    setDocumentNonBlocking(doc(firestore, 'users', user.uid), firestoreData, { merge: true });
   
-      if (newPhoto) {
-        const storage = getStorage();
-        const storageRef = ref(storage, `profile-pictures/${user.uid}`);
-        const snapshot = await uploadString(storageRef, newPhoto, 'data_url');
-        finalPhotoURL = await getDownloadURL(snapshot.ref);
-      }
-  
-      await updateAuthAndFirestore(finalPhotoURL);
-  
-      toast({
-        title: t('editProfileSuccessTitle'),
-        description: t('editProfileSuccessDescription'),
+    if (newPhoto) {
+      const storage = getStorage();
+      const storageRef = ref(storage, `profile-pictures/${user.uid}`);
+      uploadString(storageRef, newPhoto, 'data_url').then(snapshot => {
+        getDownloadURL(snapshot.ref).then(downloadURL => {
+          updateAuthAndFirestore(downloadURL);
+        });
       });
-  
-      router.push('/profile');
-  
-    } catch (error) {
-      console.error('Error saving profile:', error);
-      toast({
-        variant: 'destructive',
-        title: t('editProfileErrorTitle'),
-        description: t('editProfileErrorDescription'),
-      });
-    } finally {
-      setIsSaving(false);
+    } else {
+        updateAuthAndFirestore(user.photoURL);
     }
+  
+    toast({
+      title: t('editProfileSuccessTitle'),
+      description: t('editProfileSuccessDescription'),
+    });
+  
+    router.push('/profile');
   };
 
 
