@@ -25,7 +25,6 @@ export function AppSidebar() {
   const allMenuItems = [
     { href: '/', label: t('main'), icon: Home, requiresAuth: false },
     { href: '/explore', label: t('explore'), icon: Compass, requiresAuth: false },
-    { href: '/profile', label: t('profile'), icon: User, requiresAuth: true },
     { href: '/settings', label: t('settings'), icon: Settings, requiresAuth: false },
   ];
 
