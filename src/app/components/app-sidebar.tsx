@@ -29,30 +29,10 @@ export function AppSidebar() {
     { href: '/settings', label: 'Ustawienia', icon: Settings },
   ];
 
-  if (!mounted) {
-    return (
-        <Sidebar>
-            <SidebarHeader>
-                <Button variant="ghost" className="flex items-center gap-2">
-                    <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        className="h-6 w-6"
-                    >
-                        <path d="M12 2L2 7l10 5 10-5-10-5z"></path>
-                        <path d="M2 17l10 5 10-5"></path>
-                        <path d="M2 12l10 5 10-5"></path>
-                    </svg>
-                </Button>
-            </SidebarHeader>
-        </Sidebar>
-    );
-  }
+  // To prevent hydration mismatch, we can return a skeleton or null on the server,
+  // and the actual content on the client. But a better approach is to make sure server
+  // and client render the same thing initially.
+  // The issue is that the text is different based on language, which is client-side state.
 
   return (
     <Sidebar>
