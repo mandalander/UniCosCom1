@@ -51,6 +51,15 @@ export default function ProfilePage() {
     }
   };
 
+  const formatCreationDate = (dateString?: string) => {
+    if (!dateString) return t('profileNotSet');
+    try {
+      return format(new Date(dateString), 'P', { locale: language === 'pl' ? pl : enUS });
+    } catch (e) {
+      return dateString;
+    }
+  }
+
   // Determine the correct photo URL, prioritizing the data from Firestore (userProfile)
   const displayPhotoUrl = userProfile?.photoURL ?? user?.photoURL;
   const displayDisplayName = user?.displayName || userProfile?.displayName || t('profileNoDisplayName');
@@ -75,6 +84,7 @@ export default function ProfilePage() {
                 <Skeleton className="h-4 w-[300px]" />
                 <Skeleton className="h-4 w-[150px]" />
                 <Skeleton className="h-4 w-[180px]" />
+                <Skeleton className="h-4 w-[200px]" />
             </div>
           </div>
         ) : user ? (
@@ -103,6 +113,9 @@ export default function ProfilePage() {
                     </p>
                     <p>
                     <strong>{t('profileBirthDate')}:</strong> {userProfile?.birthDate ? formatDate(userProfile.birthDate) : t('profileNotSet')}
+                    </p>
+                    <p>
+                    <strong>{t('profileJoinedDate')}:</strong> {formatCreationDate(user.metadata.creationTime)}
                     </p>
                 </div>
           </div>

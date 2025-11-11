@@ -47,6 +47,7 @@ export const translations = {
     profileId: 'ID Użytkownika',
     profileGender: 'Płeć',
     profileBirthDate: 'Data urodzenia',
+    profileJoinedDate: 'Data dołączenia',
     profileNotSet: 'Nie ustawiono',
     editProfile: 'Edytuj profil',
 
@@ -133,6 +134,7 @@ export const translations = {
     profileId: 'User ID',
     profileGender: 'Gender',
     profileBirthDate: 'Birth Date',
+    profileJoinedDate: 'Joined on',
     profileNotSet: 'Not set',
     editProfile: 'Edit Profile',
     
