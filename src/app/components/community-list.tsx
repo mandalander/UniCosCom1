@@ -2,19 +2,13 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useLanguage } from "./language-provider";
-import { useCollection, useFirestore, useMemoFirebase } from "@/firebase";
-import { collection, query } from "firebase/firestore";
+import { communities as placeholderCommunities } from "@/lib/placeholder-data";
 
 export function CommunityList() {
   const { t } = useLanguage();
-  const firestore = useFirestore();
 
-  const communitiesQuery = useMemoFirebase(() => {
-    if (!firestore) return null;
-    return query(collection(firestore, "communities"));
-  }, [firestore]);
-
-  const { data: communities, isLoading } = useCollection(communitiesQuery);
+  const communities = placeholderCommunities;
+  const isLoading = false;
 
   return (
     <div className="space-y-4">
