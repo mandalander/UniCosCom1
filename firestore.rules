@@ -10,14 +10,6 @@ service cloud.firestore {
   match /databases/{database}/documents {
 
     /**
-     * @description Globally allow all read operations for debugging.
-     * @path /{document=**}
-     */
-    match /{document=**} {
-      allow read: if true;
-    }
-
-    /**
      * @description Grants admin privileges based on the existence of a document in the /roles_admin collection.
      * @path /roles_admin/{userId}
      */
@@ -32,6 +24,7 @@ service cloud.firestore {
      */
     match /users/{userId} {
       allow write: if isOwner(userId);
+      allow read: if isOwner(userId);
     }
 
     /**
