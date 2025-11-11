@@ -152,7 +152,7 @@ export default function EditProfilePage() {
                   <Button
                     variant={"outline"}
                     className={cn(
-                      "w-[280px] justify-start text-left font-normal",
+                      "w-[240px] justify-start text-left font-normal",
                       !birthDate && "text-muted-foreground"
                     )}
                     disabled={isSaving}
