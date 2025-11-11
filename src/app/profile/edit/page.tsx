@@ -51,6 +51,12 @@ export default function EditProfilePage() {
   }, [user, firestore]);
 
   const { data: userProfile, isLoading: isProfileLoading } = useDoc(userDocRef);
+  
+  useEffect(() => {
+    if (!isUserLoading && !user) {
+      router.push('/login');
+    }
+  }, [isUserLoading, user, router]);
 
   useEffect(() => {
     if (user) {
@@ -91,14 +97,13 @@ export default function EditProfilePage() {
   const handleSave = () => {
     if (!user || !firestore || !auth.currentUser) return;
   
-    // 1. Update non-image data immediately in a non-blocking way
+    setIsSaving(true);
+  
     const firestoreData: any = {
       gender: gender,
       birthDate: birthDate ? birthDate.toISOString().split('T')[0] : null,
       displayName: displayName
     };
-  
-    setDocumentNonBlocking(doc(firestore, 'users', user.uid), firestoreData, { merge: true });
   
     if (displayName !== user.displayName) {
         if(auth.currentUser) {
@@ -106,20 +111,20 @@ export default function EditProfilePage() {
         }
     }
   
-    // 2. If there's a new photo, upload it and update URLs in the background
+    let photoUploadPromise = Promise.resolve();
+  
     if (newPhoto) {
       const storage = getStorage();
       const storageRef = ref(storage, `profile-pictures/${user.uid}`);
       
-      uploadString(storageRef, newPhoto, 'data_url').then(snapshot => {
-        getDownloadURL(snapshot.ref).then(downloadURL => {
-          // 3. Once uploaded, update photoURL in Auth and Firestore (non-blocking)
+      photoUploadPromise = uploadString(storageRef, newPhoto, 'data_url').then(snapshot => {
+        return getDownloadURL(snapshot.ref).then(downloadURL => {
+          firestoreData.photoURL = downloadURL;
           if (auth.currentUser) {
-            updateProfile(auth.currentUser, { photoURL: downloadURL }).then(() => {
-                auth.currentUser?.reload();
+            return updateProfile(auth.currentUser, { photoURL: downloadURL }).then(() => {
+                return auth.currentUser?.reload();
             });
           }
-          setDocumentNonBlocking(doc(firestore, 'users', user.uid), { photoURL: downloadURL }, { merge: true });
         });
       }).catch(error => {
         console.error("Error uploading photo:", error);
@@ -128,27 +133,28 @@ export default function EditProfilePage() {
             title: t('editProfileErrorTitle'),
             description: "Failed to upload new profile picture.",
         });
+        throw error;
       });
     }
   
-    // 4. Immediately give feedback and navigate away
-    toast({
-      title: t('editProfileSuccessTitle'),
-      description: t('editProfileSuccessDescription'),
+    photoUploadPromise.then(() => {
+      setDocumentNonBlocking(doc(firestore, 'users', user.uid), firestoreData, { merge: true });
+  
+      toast({
+        title: t('editProfileSuccessTitle'),
+        description: t('editProfileSuccessDescription'),
+      });
+      router.push('/profile');
+    }).finally(() => {
+        setIsSaving(false);
     });
-    router.push('/profile');
   };
 
 
   const isLoading = isUserLoading || isProfileLoading;
 
-  if (isLoading) {
+  if (isLoading || !user) {
     return <div>{t('profileLoading')}</div>;
-  }
-
-  if (!user) {
-    router.push('/login');
-    return null;
   }
 
   return (
