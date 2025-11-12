@@ -50,9 +50,6 @@ service cloud.firestore {
      * @return {bool} True if the user is the creator, false otherwise.
      */
     function isCreator() {
-      // For 'update' and 'delete', resource is the existing document.
-      // For 'create', request.resource is the new document.
-      // Let's ensure we check the existing document's creatorId.
       return isSignedIn() && resource.data.creatorId == request.auth.uid;
     }
   }
