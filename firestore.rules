@@ -19,9 +19,11 @@ service cloud.firestore {
     }
     
     // Allow authenticated users to create, update, and delete communities.
-    // This single rule covers the "create" operation on the collection.
+    // The 'create' operation is handled here, for new documents.
+    // Update and delete apply to existing documents.
     match /communities/{communityId} {
-       allow write: if isSignedIn();
+       allow create: if isSignedIn();
+       allow update, delete: if isSignedIn();
     }
 
 
