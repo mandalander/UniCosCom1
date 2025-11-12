@@ -14,13 +14,20 @@ service cloud.firestore {
     }
     
     /**
-     * @description Defines rules for the communities collection and all its subcollections.
-     *              - All users can read the list of communities, individual community data, posts, and comments.
+     * @description Allow public read access to the list of communities.
+     */
+    match /communities {
+      allow list: if true;
+    }
+    
+    /**
+     * @description Defines rules for individual community documents and their subcollections.
+     *              - All users can read individual community data, posts, and comments.
      *              - Authenticated users can create communities, posts, and comments under specific conditions.
      *              - Only the original author/creator can update or delete their own documents.
      */
     match /communities/{communityId} {
-      allow read: if true;
+      allow get: if true;
       allow create: if isSignedIn() 
                       && request.resource.data.creatorId == request.auth.uid 
                       && isCommunityDataValid(request.resource.data);
