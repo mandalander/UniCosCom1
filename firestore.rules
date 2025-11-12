@@ -11,6 +11,7 @@ service cloud.firestore {
      */
     match /users/{userId} {
       allow write: if isOwner(userId);
+      // Public read access for user profiles can be enabled if needed, e.g., allow read: if true;
     }
 
     /**
@@ -20,7 +21,7 @@ service cloud.firestore {
      * @path /communities/{communityId}
      */
     match /communities/{communityId} {
-      // Allow public read access (get, list) to everyone.
+      // Allow public read access (get, list) to everyone. This covers both single doc reads and collection queries.
       allow read: if true;
 
       // Rules for creating, updating, and deleting communities.
@@ -32,8 +33,10 @@ service cloud.firestore {
 
       /**
        * @description Defines rules for the 'posts' subcollection within a community.
+       * Public read access for posts.
        */
       match /posts/{postId} {
+        allow read: if true;
         allow create: if isSignedIn() 
                         && request.resource.data.authorId == request.auth.uid 
                         && isPostDataValid(request.resource.data);
@@ -42,8 +45,10 @@ service cloud.firestore {
 
         /**
          * @description Defines rules for the 'comments' subcollection within a post.
+         * Public read access for comments.
          */
         match /comments/{commentId} {
+          allow read: if true;
           allow create: if isSignedIn()
                           && request.resource.data.authorId == request.auth.uid
                           && isCommentDataValid(request.resource.data);
@@ -86,7 +91,12 @@ service cloud.firestore {
      * @return {bool} True if the user is the author, false otherwise.
      */
     function isAuthor(postId) {
-      let postPath = /databases/$(database)/documents/communities/$(resource.data.communityId)/posts/$(postId);
+      // This function needs context of communityId, which is not directly available in a general function.
+      // This will only work if the client provides communityId in the resource data during update/delete,
+      // which might not be the case. For simplicity, assuming it's available.
+      // A more robust way might require restructuring rules or client-side logic.
+      let communityId = resource.data.communityId;
+      let postPath = /databases/$(database)/documents/communities/$(communityId)/posts/$(postId);
       return isSignedIn() && get(postPath).data.authorId == request.auth.uid;
     }
     
@@ -95,7 +105,10 @@ service cloud.firestore {
      * @return {bool} True if the user is the author, false otherwise.
      */
     function isCommentAuthor(commentId) {
-      let commentPath = /databases/$(database)/documents/communities/$(resource.data.communityId)/posts/$(resource.data.postId)/comments/$(commentId);
+       // This function also needs context (communityId, postId)
+      let communityId = resource.data.communityId;
+      let postId = resource.data.postId;
+      let commentPath = /databases/$(database)/documents/communities/$(communityId)/posts/$(postId)/comments/$(commentId);
       return isSignedIn() && get(commentPath).data.authorId == request.auth.uid;
     }
 
@@ -119,11 +132,13 @@ service cloud.firestore {
      * @return {bool} True if the data is valid, false otherwise.
      */
     function isPostDataValid(data) {
-      return data.keys().hasAll(['title', 'content', 'authorId', 'createdAt'])
-             && data.size() == 4
+      // Assumes communityId is passed for context in rules.
+      return data.keys().hasAll(['title', 'content', 'authorId', 'createdAt', 'communityId'])
+             && data.size() == 5
              && data.title is string && data.title.size() > 0 && data.title.size() < 100
              && data.content is string && data.content.size() > 0
              && data.authorId is string && data.authorId.size() > 0
+             && data.communityId is string
              && data.createdAt == request.time;
     }
 
@@ -133,10 +148,13 @@ service cloud.firestore {
      * @return {bool} True if the data is valid, false otherwise.
      */
     function isCommentDataValid(data) {
-      return data.keys().hasAll(['content', 'authorId', 'createdAt'])
-             && data.size() == 3
+      // Assumes communityId and postId are passed for context.
+      return data.keys().hasAll(['content', 'authorId', 'createdAt', 'communityId', 'postId'])
+             && data.size() == 5
              && data.content is string && data.content.size() > 0 && data.content.size() < 1000
              && data.authorId is string && data.authorId.size() > 0
+             && data.communityId is string
+             && data.postId is string
              && data.createdAt == request.time;
     }
   }
