@@ -14,21 +14,26 @@ service cloud.firestore {
     }
     
     /**
-     * @description Allow public read access (get and list) to all community-related documents,
-     * including community details, posts, and comments. This is a broad rule
-     * to ensure data can be displayed publicly. Write operations are secured
-     * in more specific rules below.
+     * @description Allow public read access to the list of communities.
      */
-    match /communities/{document=**} {
-        allow read: if true;
+    match /communities {
+      allow list: if true;
     }
 
     /**
-     * @description Defines write rules for individual community documents.
+     * @description Defines rules for individual community documents.
      */
     match /communities/{communityId} {
+      allow get: if true;
       allow create: if isSignedIn() && isCommunityDataValid(request.resource.data) && request.resource.data.creatorId == request.auth.uid;
       allow update, delete: if isSignedIn() && isCreator(get(/databases/$(database)/documents/communities/$(communityId))) && isCommunityDataValid(request.resource.data);
+    }
+    
+    /**
+     * @description Allow public read access for posts and comments.
+     */
+    match /communities/{communityId}/posts/{document=**} {
+      allow read: if true;
     }
 
     /**
