@@ -21,7 +21,7 @@ service cloud.firestore {
      */
     match /communities/{communityId} {
       allow read;
-      allow create: if isSignedIn();
+      allow create: if isSignedIn() && request.resource.data.creatorId == request.auth.uid;
       allow update, delete: if isCreator(communityId);
     }
 
@@ -47,10 +47,11 @@ service cloud.firestore {
 
     /**
      * @description Checks if the requesting user is the creator of the community.
+     * This version checks the existing resource in the database.
      * @return {bool} True if the user is the creator, false otherwise.
      */
     function isCreator(communityId) {
-      return isSignedIn() && request.resource.data.creatorId == request.auth.uid;
+      return isSignedIn() && resource.data.creatorId == request.auth.uid;
     }
   }
 }
