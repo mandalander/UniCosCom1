@@ -31,7 +31,7 @@ export function CreateCommunityDialog({ children }: { children: React.ReactNode 
   const [description, setDescription] = useState('');
   const [isCreating, setIsCreating] = useState(false);
 
-  const handleCreate = async () => {
+  const handleCreate = () => {
     if (!user || !firestore) {
       toast({
         variant: "destructive",
@@ -51,35 +51,25 @@ export function CreateCommunityDialog({ children }: { children: React.ReactNode 
 
     setIsCreating(true);
 
-    try {
-      const communitiesColRef = collection(firestore, 'communities');
-      const communityData = {
-        name: communityName,
-        description: description,
-        creatorId: user.uid,
-        createdAt: serverTimestamp(),
-      };
-      
-      await addDocumentNonBlocking(communitiesColRef, communityData);
+    const communitiesColRef = collection(firestore, 'communities');
+    const communityData = {
+      name: communityName,
+      description: description,
+      creatorId: user.uid,
+      createdAt: serverTimestamp(),
+    };
+    
+    addDocumentNonBlocking(communitiesColRef, communityData);
 
-      toast({
-        title: "Sukces!",
-        description: `Społeczność "${communityName}" została utworzona.`,
-      });
-      
-      setCommunityName('');
-      setDescription('');
-      setOpen(false);
-
-    } catch (error) {
-       toast({
-        variant: "destructive",
-        title: "Błąd tworzenia społeczności",
-        description: "Wystąpił nieoczekiwany błąd.",
-      });
-    } finally {
-      setIsCreating(false);
-    }
+    toast({
+      title: "Sukces!",
+      description: `Społeczność "${communityName}" jest tworzona.`,
+    });
+    
+    setCommunityName('');
+    setDescription('');
+    setOpen(false);
+    setIsCreating(false);
   };
 
   return (
