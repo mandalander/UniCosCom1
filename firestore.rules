@@ -14,37 +14,39 @@ service cloud.firestore {
     }
 
     /**
-     * @description Public read access for the entire communities collection and all subcollections.
-     *              Write access is defined in more specific rules below.
+     * @description Allow public listing of the communities collection.
      */
-    match /communities/{document=**} {
-      allow read: if true;
+    match /communities {
+      allow list: if true;
     }
     
     /**
-     * @description Defines write rules for individual community documents.
+     * @description Defines rules for individual community documents and their subcollections.
+     *              Allows public read access to documents.
      */
     match /communities/{communityId} {
+      allow get: if true;
       allow create: if isSignedIn() && isCommunityDataValid(request.resource.data) && request.resource.data.creatorId == request.auth.uid;
       allow update, delete: if isSignedIn() && isCreator(get(/databases/$(database)/documents/communities/$(communityId))) && isCommunityDataValid(request.resource.data);
-    }
 
-    /**
-     * @description Defines write rules for posts within a community.
-     */
-    match /communities/{communityId}/posts/{postId} {
+      /**
+       * @description Defines rules for posts within a community.
+       */
+      match /posts/{postId} {
+        allow get: if true;
         allow create: if isSignedIn() && isPostDataValid(request.resource.data) && request.resource.data.authorId == request.auth.uid;
         allow update, delete: if isSignedIn() && isAuthor(get(/databases/$(database)/documents/communities/$(communityId)/posts/$(postId))) && isPostDataValid(request.resource.data);
-    }
 
-    /**
-     * @description Defines write rules for comments on a post.
-     */
-    match /communities/{communityId}/posts/{postId}/comments/{commentId} {
-        allow create: if isSignedIn() && isCommentDataValid(request.resource.data) && request.resource.data.authorId == request.auth.uid;
-        allow update, delete: if isSignedIn() && isCommentAuthor(get(/databases/$(database)/documents/communities/$(communityId)/posts/$(postId)/comments/$(commentId))) && isCommentDataValid(request.resource.data);
+        /**
+         * @description Defines rules for comments on a post.
+         */
+        match /comments/{commentId} {
+            allow get: if true;
+            allow create: if isSignedIn() && isCommentDataValid(request.resource.data) && request.resource.data.authorId == request.auth.uid;
+            allow update, delete: if isSignedIn() && isCommentAuthor(get(/databases/$(database)/documents/communities/$(communityId)/posts/$(postId)/comments/$(commentId))) && isCommentDataValid(request.resource.data);
+        }
+      }
     }
-
 
     // ---- Helper functions ----
 
