@@ -12,16 +12,9 @@ service cloud.firestore {
     match /users/{userId} {
       allow read, write: if isOwner(userId);
     }
-
-    /**
-     * @description Defines rules for the 'communities' collection and its subcollections.
-     * Read access is public. Write access is restricted.
-     */
+    
     match /communities/{communityId} {
-      // Public access to read communities and their subcollections
       allow read: if true;
-
-      // Rules for writing, updating, and deleting communities
       allow create: if isSignedIn() 
                       && request.resource.data.creatorId == request.auth.uid 
                       && isCommunityDataValid(request.resource.data);
