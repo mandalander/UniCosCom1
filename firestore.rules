@@ -14,36 +14,37 @@ service cloud.firestore {
     }
     
     /**
-     * @description Defines rules for the communities collection.
-     *              - All users can read the list of communities and individual community data.
-     *              - Authenticated users can create communities.
-     *              - Only the creator can update or delete their community.
-     *              - Subcollection rules for posts and comments are nested within.
+     * @description Defines rules for the communities collection and all its subcollections.
+     *              - All users can read the list of communities, individual community data, posts, and comments.
+     *              - Authenticated users can create communities, posts, and comments under specific conditions.
+     *              - Only the original author/creator can update or delete their own documents.
      */
     match /communities/{communityId} {
-        allow read: if true;
-        allow create: if isSignedIn() 
-                        && request.resource.data.creatorId == request.auth.uid 
-                        && isCommunityDataValid(request.resource.data);
-        allow update: if isCreator(get(/databases/$(database)/documents/communities/$(communityId))) 
-                        && isCommunityDataValid(request.resource.data);
-        allow delete: if isCreator(get(/databases/$(database)/documents/communities/$(communityId)));
+      allow read: if true;
+      allow create: if isSignedIn() 
+                      && request.resource.data.creatorId == request.auth.uid 
+                      && isCommunityDataValid(request.resource.data);
+      allow update: if isCreator(get(/databases/$(database)/documents/communities/$(communityId))) 
+                      && isCommunityDataValid(request.resource.data);
+      allow delete: if isCreator(get(/databases/$(database)/documents/communities/$(communityId)));
 
-        match /posts/{postId} {
-            allow create: if isSignedIn() 
-                            && request.resource.data.authorId == request.auth.uid 
-                            && isPostDataValid(request.resource.data);
-            allow update: if isAuthor(get(/databases/$(database)/documents/communities/$(communityId)/posts/$(postId))) && isPostDataValid(request.resource.data);
-            allow delete: if isAuthor(get(/databases/$(database)/documents/communities/$(communityId)/posts/$(postId)));
+      match /posts/{postId} {
+          allow read: if true;
+          allow create: if isSignedIn() 
+                          && request.resource.data.authorId == request.auth.uid 
+                          && isPostDataValid(request.resource.data);
+          allow update: if isAuthor(get(/databases/$(database)/documents/communities/$(communityId)/posts/$(postId))) && isPostDataValid(request.resource.data);
+          allow delete: if isAuthor(get(/databases/$(database)/documents/communities/$(communityId)/posts/$(postId)));
 
-            match /comments/{commentId} {
-                allow create: if isSignedIn()
-                              && request.resource.data.authorId == request.auth.uid
-                              && isCommentDataValid(request.resource.data);
-                allow update: if isCommentAuthor(get(/databases/$(database)/documents/communities/$(communityId)/posts/$(postId)/comments/$(commentId))) && isCommentDataValid(request.resource.data);
-                allow delete: if isCommentAuthor(get(/databases/$(database)/documents/communities/$(communityId)/posts/$(postId)/comments/$(commentId)));
-            }
-        }
+          match /comments/{commentId} {
+              allow read: if true;
+              allow create: if isSignedIn()
+                            && request.resource.data.authorId == request.auth.uid
+                            && isCommentDataValid(request.resource.data);
+              allow update: if isCommentAuthor(get(/databases/$(database)/documents/communities/$(communityId)/posts/$(postId)/comments/$(commentId))) && isCommentDataValid(request.resource.data);
+              allow delete: if isCommentAuthor(get(/databases/$(database)/documents/communities/$(communityId)/posts/$(postId)/comments/$(commentId)));
+          }
+      }
     }
 
 
