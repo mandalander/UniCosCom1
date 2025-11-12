@@ -1,7 +1,6 @@
 'use client'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useLanguage } from "../components/language-provider";
-import { CommunityList } from "../components/community-list";
 
 export default function ExplorePage() {
   const { t } = useLanguage();
@@ -16,7 +15,6 @@ export default function ExplorePage() {
           <p>{t('exploreContent')}</p>
         </CardContent>
       </Card>
-      <CommunityList />
     </div>
   )
 }
