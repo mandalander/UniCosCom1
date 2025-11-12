@@ -1,7 +1,8 @@
 'use client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useLanguage } from "./components/language-provider";
-import { CommunityList } from "./components/community-list";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
 
 export default function Home() {
   const { t } = useLanguage();
@@ -16,12 +17,17 @@ export default function Home() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <p>
+          <p className="mb-4">
             {t('homeContent1')}
           </p>
+          <p>
+            {t('homeContent3')}
+          </p>
+          <Button asChild className="mt-4">
+            <Link href="/explore">{t('explore')}</Link>
+          </Button>
         </CardContent>
       </Card>
-      <CommunityList />
     </div>
   );
 }
