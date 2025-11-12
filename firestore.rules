@@ -13,16 +13,10 @@ service cloud.firestore {
       allow read, write: if isOwner(userId);
     }
     
-    // Rule for the collection itself: allows listing documents
-    match /communities {
-      allow list: if true;
-    }
-
-    // Rule for individual documents within the collection
     match /communities/{communityId} {
-      // Allow read access (get) to everyone for single documents
-      allow get: if true;
-      // Allow write access (create, update, delete) only to signed-in users
+      // Allow read (get, list) for everyone.
+      // Allow write (create, update, delete) for signed-in users.
+      allow read: if true;
       allow write: if isSignedIn();
     }
 
