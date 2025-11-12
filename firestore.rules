@@ -13,10 +13,8 @@ service cloud.firestore {
       allow read, write: if isOwner(userId);
     }
     
-    // Allow public read and write access to the communities collection for now
-    // to unblock development.
-    match /communities/{document=**} {
-      allow read, write: if true;
+    match /communities/{communityId} {
+      allow read, write: if isSignedIn();
     }
 
 
