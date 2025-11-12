@@ -14,59 +14,51 @@ service cloud.firestore {
     }
 
     /**
-     * @description Allow public read access for the entire 'communities' collection.
+     * @description Allow public read access (list and get) for the entire 'communities' collection.
      * This is necessary for the initial fetching/listing of all communities.
      */
-    match /communities {
-      allow list, get: if true;
-    }
-
-    /**
-     * @description Defines rules for individual 'communities' documents and their subcollections.
-     * Write operations are restricted.
-     */
     match /communities/{communityId} {
-      // Public read is already handled by the rule above.
-
-      // Allow creating a community if the user is signed in, the creatorId matches, and the data is valid.
-      allow create: if isSignedIn() 
-                      && request.resource.data.creatorId == request.auth.uid 
-                      && isCommunityDataValid(request.resource.data);
-      
-      // Allow updating a community only if the user is the creator and the data is valid.
-      allow update: if isCreator(get(/databases/$(database)/documents/communities/$(communityId))) 
-                      && isCommunityDataValid(request.resource.data);
-      
-      // Allow deleting a community only if the user is the creator.
-      allow delete: if isCreator(get(/databases/$(database)/documents/communities/$(communityId)));
-
-      /**
-       * @description Defines rules for the 'posts' subcollection within a community.
-       */
-      match /posts/{postId} {
-        // Public read access for posts
         allow read: if true;
         
+        // Allow creating a community if the user is signed in, the creatorId matches, and the data is valid.
         allow create: if isSignedIn() 
-                        && request.resource.data.authorId == request.auth.uid 
-                        && isPostDataValid(request.resource.data);
-        allow update: if isAuthor(get(/databases/$(database)/documents/communities/$(communityId)/posts/$(postId))) && isPostDataValid(request.resource.data);
-        allow delete: if isAuthor(get(/databases/$(database)/documents/communities/$(communityId)/posts/$(postId)));
+                        && request.resource.data.creatorId == request.auth.uid 
+                        && isCommunityDataValid(request.resource.data);
+        
+        // Allow updating a community only if the user is the creator and the data is valid.
+        allow update: if isCreator(resource) 
+                        && isCommunityDataValid(request.resource.data);
+        
+        // Allow deleting a community only if the user is the creator.
+        allow delete: if isCreator(resource);
 
         /**
-         * @description Defines rules for the 'comments' subcollection within a post.
+         * @description Defines rules for the 'posts' subcollection within a community.
          */
-        match /comments/{commentId} {
-          // Public read access for comments
+        match /posts/{postId} {
+          // Public read access for posts
           allow read: if true;
+          
+          allow create: if isSignedIn() 
+                          && request.resource.data.authorId == request.auth.uid 
+                          && isPostDataValid(request.resource.data);
+          allow update: if isAuthor(resource) && isPostDataValid(request.resource.data);
+          allow delete: if isAuthor(resource);
 
-          allow create: if isSignedIn()
-                          && request.resource.data.authorId == request.auth.uid
-                          && isCommentDataValid(request.resource.data);
-          allow update: if isCommentAuthor(get(/databases/$(database)/documents/communities/$(communityId)/posts/$(postId)/comments/$(commentId))) && isCommentDataValid(request.resource.data);
-          allow delete: if isCommentAuthor(get(/databases/$(database)/documents/communities/$(communityId)/posts/$(postId)/comments/$(commentId)));
+          /**
+           * @description Defines rules for the 'comments' subcollection within a post.
+           */
+          match /comments/{commentId} {
+            // Public read access for comments
+            allow read: if true;
+
+            allow create: if isSignedIn()
+                            && request.resource.data.authorId == request.auth.uid
+                            && isCommentDataValid(request.resource.data);
+            allow update: if isCommentAuthor(resource) && isCommentDataValid(request.resource.data);
+            allow delete: if isCommentAuthor(resource);
+          }
         }
-      }
     }
 
 
@@ -91,6 +83,7 @@ service cloud.firestore {
 
     /**
      * @description Checks if the requesting user is the creator of the community.
+     * @param {object} community The community resource document.
      * @return {bool} True if the user is the creator, false otherwise.
      */
     function isCreator(community) {
@@ -99,6 +92,7 @@ service cloud.firestore {
 
     /**
      * @description Checks if the requesting user is the author of the post.
+     * @param {object} post The post resource document.
      * @return {bool} True if the user is the author, false otherwise.
      */
     function isAuthor(post) {
@@ -107,6 +101,7 @@ service cloud.firestore {
     
     /**
      * @description Checks if the requesting user is the author of the comment.
+     * @param {object} comment The comment resource document.
      * @return {bool} True if the user is the author, false otherwise.
      */
     function isCommentAuthor(comment) {
