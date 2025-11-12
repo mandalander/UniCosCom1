@@ -17,7 +17,7 @@ service cloud.firestore {
      * @description Public read access for listing the communities collection.
      */
     match /communities {
-      allow get, list: if true;
+      allow list: if true;
     }
     
     /**
@@ -25,7 +25,7 @@ service cloud.firestore {
      *              Also allows public read for individual documents.
      */
     match /communities/{communityId} {
-      allow read: if true;
+      allow get: if true;
       allow create: if isSignedIn() && isCommunityDataValid(request.resource.data) && request.resource.data.creatorId == request.auth.uid;
       allow update, delete: if isSignedIn() && isCreator(get(/databases/$(database)/documents/communities/$(communityId))) && isCommunityDataValid(request.resource.data);
     }
