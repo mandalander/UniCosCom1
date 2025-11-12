@@ -15,9 +15,6 @@ service cloud.firestore {
 
     /**
      * @description Defines rules for the 'communities' collection.
-     * - Public Read Access: Anyone can read (`get`, `list`) the communities.
-     * - Create: Any signed-in user can create a community, but they must be the creator and provide valid data.
-     * - Update/Delete: Only the original creator of a community can update or delete it.
      */
     match /communities/{communityId} {
       allow get, list: if true;
@@ -29,9 +26,6 @@ service cloud.firestore {
 
       /**
        * @description Defines rules for the 'posts' subcollection within a community.
-       * - Public Read: Anyone can read posts.
-       * - Create: Any signed-in user can create a post with valid data.
-       * - Update/Delete: Only the author of the post can update or delete it.
        */
       match /posts/{postId} {
         allow get, list: if true;
@@ -40,6 +34,18 @@ service cloud.firestore {
                         && isPostDataValid(request.resource.data);
         allow update: if isAuthor(postId) && isPostDataValid(request.resource.data);
         allow delete: if isAuthor(postId);
+
+        /**
+         * @description Defines rules for the 'comments' subcollection within a post.
+         */
+        match /comments/{commentId} {
+          allow get, list: if true;
+          allow create: if isSignedIn()
+                          && request.resource.data.authorId == request.auth.uid
+                          && isCommentDataValid(request.resource.data);
+          allow update: if isCommentAuthor(commentId) && isCommentDataValid(request.resource.data);
+          allow delete: if isCommentAuthor(commentId);
+        }
       }
     }
 
@@ -76,9 +82,17 @@ service cloud.firestore {
      * @return {bool} True if the user is the author, false otherwise.
      */
     function isAuthor(postId) {
-      // Note: `communityId` is available from the parent `match` block.
       let postPath = /databases/$(database)/documents/communities/$(communityId)/posts/$(postId);
       return isSignedIn() && get(postPath).data.authorId == request.auth.uid;
+    }
+    
+    /**
+     * @description Checks if the requesting user is the author of the comment.
+     * @return {bool} True if the user is the author, false otherwise.
+     */
+    function isCommentAuthor(commentId) {
+      let commentPath = /databases/$(database)/documents/communities/$(communityId)/posts/$(postId)/comments/$(commentId);
+      return isSignedIn() && get(commentPath).data.authorId == request.auth.uid;
     }
 
     /**
@@ -105,6 +119,19 @@ service cloud.firestore {
              && data.size() == 4
              && data.title is string && data.title.size() > 0 && data.title.size() < 100
              && data.content is string && data.content.size() > 0
+             && data.authorId is string && data.authorId.size() > 0
+             && data.createdAt == request.time;
+    }
+
+    /**
+     * @description Validates the data for a comment document.
+     * @param {map} data The resource data from the request.
+     * @return {bool} True if the data is valid, false otherwise.
+     */
+    function isCommentDataValid(data) {
+      return data.keys().hasAll(['content', 'authorId', 'createdAt'])
+             && data.size() == 3
+             && data.content is string && data.content.size() > 0 && data.content.size() < 1000
              && data.authorId is string && data.authorId.size() > 0
              && data.createdAt == request.time;
     }
