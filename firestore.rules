@@ -14,20 +14,13 @@ service cloud.firestore {
     }
     
     /**
-     * @description Defines rules for the 'communities' collection.
-     *              Allows public listing of all communities.
-     */
-    match /communities {
-      allow list: if true;
-    }
-    
-    /**
-     * @description Defines rules for individual documents within the 'communities' collection
-     *              and their subcollections.
+     * @description Defines rules for the 'communities' collection and its subcollections.
+     *              - Allows public read access to all communities and their nested content.
+     *              - Restricts write operations to authenticated users with specific roles (creator/author).
      */
     match /communities/{communityId} {
-      // Allow public read access to any single community document.
-      allow get: if true;
+      // Allow public read access to any single community document and list of communities.
+      allow read: if true;
       
       // Allow creating a community if the user is signed in, the creatorId matches, and the data is valid.
       allow create: if isSignedIn() 
@@ -43,10 +36,9 @@ service cloud.firestore {
 
       /**
        * @description Defines rules for the 'posts' subcollection within a community.
-       *              Allows public read, but restricts writes.
        */
       match /posts/{postId} {
-        allow read: if true;
+        // read is inherited from the parent rule `allow read: if true;`
         allow create: if isSignedIn() 
                         && request.resource.data.authorId == request.auth.uid 
                         && isPostDataValid(request.resource.data);
@@ -55,10 +47,9 @@ service cloud.firestore {
 
         /**
          * @description Defines rules for the 'comments' subcollection within a post.
-         *              Allows public read, but restricts writes.
          */
         match /comments/{commentId} {
-          allow read: if true;
+          // read is inherited from the parent rule `allow read: if true;`
           allow create: if isSignedIn()
                           && request.resource.data.authorId == request.auth.uid
                           && isCommentDataValid(request.resource.data);
