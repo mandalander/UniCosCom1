@@ -82,7 +82,7 @@ service cloud.firestore {
      * @return {bool} True if the user is the author, false otherwise.
      */
     function isAuthor(postId) {
-      let postPath = /databases/$(database)/documents/communities/$(communityId)/posts/$(postId);
+      let postPath = /databases/$(database)/documents/communities/$(resource.data.communityId)/posts/$(postId);
       return isSignedIn() && get(postPath).data.authorId == request.auth.uid;
     }
     
@@ -91,7 +91,7 @@ service cloud.firestore {
      * @return {bool} True if the user is the author, false otherwise.
      */
     function isCommentAuthor(commentId) {
-      let commentPath = /databases/$(database)/documents/communities/$(communityId)/posts/$(postId)/comments/$(commentId);
+      let commentPath = /databases/$(database)/documents/communities/$(resource.data.communityId)/posts/$(resource.data.postId)/comments/$(commentId);
       return isSignedIn() && get(commentPath).data.authorId == request.auth.uid;
     }
 
