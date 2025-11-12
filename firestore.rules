@@ -19,7 +19,7 @@ service cloud.firestore {
      * Allows creation of new communities for any signed-in user.
      * Allows updates and deletes only by the original creator of a community document.
      */
-    match /communities/{communityId} {
+    match /communities/{document=**} {
       allow read;
       allow create: if isSignedIn();
       allow update, delete: if isCreator();
