@@ -13,11 +13,18 @@ service cloud.firestore {
       allow read, write: if isOwner(userId);
     }
     
+    // This rule allows anyone to LIST the communities collection.
+    // This is required for the main community list page.
+    match /communities {
+      allow list: if true;
+    }
+    
+    // This rule governs access to INDIVIDUAL community documents.
     match /communities/{communityId} {
-      // Allow read (get, list) for everyone.
-      // Allow write (create, update, delete) for signed-in users.
-      allow read: if true;
-      allow write: if isSignedIn();
+      // Allow anyone to GET a single community document.
+      allow get: if true;
+      // Allow any signed-in user to CREATE, UPDATE, or DELETE a community.
+      allow create, update, delete: if isSignedIn();
     }
 
 
