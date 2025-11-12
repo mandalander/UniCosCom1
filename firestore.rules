@@ -13,15 +13,10 @@ service cloud.firestore {
       allow read, write: if isOwner(userId);
     }
     
-    // Explicitly allow anyone to list the communities collection.
-    // This is a separate rule from the individual document access below.
-    match /communities {
-      allow list: if true;
-    }
-    
     match /communities/{communityId} {
-      // Allow reading individual documents, creating, updating, and deleting
-      allow get: if true;
+      // Allow everyone to read the communities collection and individual documents.
+      // Write operations (create, update, delete) are restricted.
+      allow read: if true;
       allow create: if isSignedIn() 
                       && request.resource.data.creatorId == request.auth.uid 
                       && isCommunityDataValid(request.resource.data);
