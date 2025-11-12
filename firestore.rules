@@ -18,7 +18,7 @@ service cloud.firestore {
      * Read access is public. Write access is restricted.
      */
     match /communities/{communityId} {
-      allow get, list: if true;
+      allow read: if true;
       allow create: if isSignedIn() 
                       && request.resource.data.creatorId == request.auth.uid 
                       && isCommunityDataValid(request.resource.data);
