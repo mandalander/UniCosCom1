@@ -4,10 +4,6 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Allow public read access to all collections for now to fix the permissions issue.
-    // This is a temporary measure to ensure the application is functional.
-    allow read: if true;
-
     /**
      * @description Grants access to user-specific data only to the authenticated user.
      * @path /users/{userId}
@@ -15,14 +11,14 @@ service cloud.firestore {
     match /users/{userId} {
       allow write: if isOwner(userId);
     }
-    
+
     /**
      * @description Defines rules for the 'communities' collection.
-     * Write access is restricted.
+     * Public read and list access is allowed. Write access is restricted.
      * @path /communities/{communityId}
      */
     match /communities/{communityId} {
-      // Rules for creating, updating, and deleting communities.
+      allow read: if true; // Allows get and list operations for everyone
       allow create: if isSignedIn() 
                       && request.resource.data.creatorId == request.auth.uid 
                       && isCommunityDataValid(request.resource.data);
@@ -34,6 +30,7 @@ service cloud.firestore {
        * Public read access for posts.
        */
       match /posts/{postId} {
+        allow read: if true;
         allow create: if isSignedIn() 
                         && request.resource.data.authorId == request.auth.uid 
                         && isPostDataValid(request.resource.data);
@@ -45,6 +42,7 @@ service cloud.firestore {
          * Public read access for comments.
          */
         match /comments/{commentId} {
+          allow read: if true;
           allow create: if isSignedIn()
                           && request.resource.data.authorId == request.auth.uid
                           && isCommentDataValid(request.resource.data);
