@@ -2,19 +2,54 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useLanguage } from "./language-provider";
-import { communities as placeholderCommunities } from "@/lib/placeholder-data";
+import { useCollection, useFirestore, useMemoFirebase } from "@/firebase";
+import { collection } from "firebase/firestore";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export function CommunityList() {
   const { t } = useLanguage();
+  const firestore = useFirestore();
 
-  // Using placeholder data directly
-  const communities = placeholderCommunities;
-  const isLoading = false;
+  const communitiesColRef = useMemoFirebase(() => {
+    if (!firestore) return null;
+    return collection(firestore, 'communities');
+  }, [firestore]);
+
+  const { data: communities, isLoading, error } = useCollection(communitiesColRef);
+
+  if (isLoading) {
+    return (
+       <div className="space-y-4">
+        <h2 className="text-2xl font-bold">{t('homeTitle')}</h2>
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          {[...Array(3)].map((_, i) => (
+            <Card key={i}>
+              <CardHeader>
+                <Skeleton className="h-6 w-3/4" />
+              </CardHeader>
+              <CardContent>
+                <Skeleton className="h-4 w-full" />
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </div>
+    )
+  }
+  
+  if (error) {
+    return (
+      <div className="text-red-500">
+        <p>Błąd ładowania społeczności:</p>
+        <p className="text-sm">{error.message}</p>
+      </div>
+    )
+  }
 
   return (
     <div className="space-y-4">
-      <h2 className="text-2xl font-bold">{t('homeTitle')}</h2>
-      {!isLoading && communities && communities.length > 0 ? (
+      <h2 className="text-2xl font-bold">Społeczności</h2>
+      {communities && communities.length > 0 ? (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {communities.map((community) => (
             <Card key={community.id}>
@@ -27,8 +62,6 @@ export function CommunityList() {
             </Card>
           ))}
         </div>
-      ) : isLoading ? (
-        <p>Ładowanie społeczności...</p>
       ) : (
         <p>Nie utworzono jeszcze żadnych społeczności.</p>
       )}
