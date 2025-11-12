@@ -1,5 +1,4 @@
 'use client';
-import { CommunityList } from "./components/community-list";
 import { useLanguage } from "./components/language-provider";
 
 export default function Home() {
@@ -7,7 +6,15 @@ export default function Home() {
 
   return (
     <div className="container mx-auto">
-      <CommunityList />
+      <div className="space-y-4">
+        <h1 className="text-3xl font-bold">{t('homeTitle')}</h1>
+        <p className="text-muted-foreground">{t('homeDescription')}</p>
+        <div className="space-y-2">
+          <p>{t('homeContent1')}</p>
+          <p>{t('homeContent2')}</p>
+          <p>{t('homeContent3')}</p>
+        </div>
+      </div>
     </div>
   );
 }
