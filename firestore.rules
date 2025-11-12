@@ -16,6 +16,8 @@ service cloud.firestore {
     /**
      * @description Defines rules for the communities collection and all its subcollections.
      *              Allows public read access to all documents and subcollections.
+     *              This rule applies to the 'communities' collection and any document within it
+     *              and any of its subcollections.
      */
     match /communities/{document=**} {
         allow read: if true;
