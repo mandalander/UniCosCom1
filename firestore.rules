@@ -23,12 +23,10 @@ service cloud.firestore {
 
     /**
      * @description Write access is granted to signed-in users for creating, updating, and deleting
-     * community-related documents, with data validation.
+     * community-related documents.
      */
     match /communities/{communityId} {
-      allow create: if isSignedIn() && isCommunityDataValid(request.resource.data);
-      allow update: if isSignedIn() && isCommunityDataValid(request.resource.data);
-      allow delete: if isSignedIn();
+      allow write: if isSignedIn();
     }
 
     match /communities/{communityId}/posts/{postId} {
@@ -76,23 +74,6 @@ service cloud.firestore {
      */
     function isCommentAuthor(comment) {
       return isSignedIn() && comment.data.authorId == request.auth.uid;
-    }
-
-    /**
-     * @description Validates the data for a community document.
-     * @param {map} data The resource data from the request.
-     * @return {bool} True if the data is valid, false otherwise.
-     */
-    function isCommunityDataValid(data) {
-      let isCreating = resource == null;
-      let existingData = isCreating ? null : resource.data;
-      
-      return data.keys().hasAll(['name', 'description', 'creatorId', 'createdAt'])
-             && (data.size() == 4 || (data.size() == 5 && data.keys().has('updatedAt')))
-             && data.name is string && data.name.size() > 0 && data.name.size() < 50
-             && data.description is string && data.description.size() < 500
-             && data.creatorId is string && data.creatorId == request.auth.uid
-             && (isCreating ? request.resource.data.createdAt == request.time : data.createdAt == existingData.createdAt);
     }
 
     /**
