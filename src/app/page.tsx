@@ -1,5 +1,4 @@
 'use client';
-import { CommunityList } from "./components/community-list";
 import { useLanguage } from "./components/language-provider";
 
 export default function Home() {
@@ -12,7 +11,6 @@ export default function Home() {
           <h1 className="text-3xl font-bold">{t('homeTitle')}</h1>
           <p className="text-muted-foreground">{t('homeDescription')}</p>
         </div>
-        <CommunityList />
       </div>
     </div>
   );
