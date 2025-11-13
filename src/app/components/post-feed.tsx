@@ -1,7 +1,7 @@
 'use client';
 
 import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
-import { collectionGroup, query, orderBy, getDocs, collection, limit } from 'firebase/firestore';
+import { collectionGroup, query, orderBy, getDocs, collection, limit, doc, getDoc } from 'firebase/firestore';
 import { Card, CardHeader, CardTitle, CardContent, CardFooter, CardDescription } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useLanguage } from '@/app/components/language-provider';
@@ -124,22 +124,30 @@ export function PostFeed() {
       if (!firestore) return;
       setIsLoading(true);
 
-      const postsQuery = query(collectionGroup(firestore, 'posts'), orderBy('createdAt', 'desc'), limit(10));
+      const postsQuery = query(collectionGroup(firestore, 'posts'), limit(25));
       const postSnapshots = await getDocs(postsQuery);
 
-      const postsData = await Promise.all(postSnapshots.docs.map(async (postDoc) => {
+      const postsDataPromises = postSnapshots.docs.map(async (postDoc) => {
         const post = { id: postDoc.id, ...postDoc.data() } as Omit<Post, 'communityName' | 'communityId'>;
         const communityRef = postDoc.ref.parent.parent;
+        
         if (!communityRef) return null;
+
+        const communitySnap = await getDoc(communityRef);
+        const communityName = communitySnap.exists() ? communitySnap.data().name : 'Unknown Community';
         
         return {
           ...post,
           communityId: communityRef.id,
-          communityName: communityRef.id, // Placeholder, can be fetched if needed
+          communityName: communityName,
         } as Post;
-      }));
+      });
 
-      setPosts(postsData.filter((p): p is Post => p !== null));
+      const postsData = (await Promise.all(postsDataPromises)).filter((p): p is Post => p !== null);
+
+      postsData.sort((a, b) => b.createdAt.toDate() - a.createdAt.toDate());
+
+      setPosts(postsData.slice(0, 10)); // Ensure we only show 10 posts after sorting.
       setIsLoading(false);
     };
 
