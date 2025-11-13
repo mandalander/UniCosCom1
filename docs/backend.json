@@ -87,6 +87,23 @@
           "type": "string",
           "format": "date-time",
           "description": "The timestamp when the post was created."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "The timestamp when the post was last updated."
+        },
+        "upvotes": {
+          "type": "number",
+          "description": "The number of upvotes the post has received."
+        },
+        "downvotes": {
+          "type": "number",
+          "description": "The number of downvotes the post has received."
+        },
+        "voteCount": {
+          "type": "number",
+          "description": "The total score of the post (upvotes - downvotes)."
         }
       },
       "required": [
@@ -94,7 +111,10 @@
         "content",
         "creatorId",
         "creatorDisplayName",
-        "createdAt"
+        "createdAt",
+        "upvotes",
+        "downvotes",
+        "voteCount"
       ]
     },
     "Comment": {
@@ -124,13 +144,53 @@
           "type": "string",
           "format": "date-time",
           "description": "The timestamp when the comment was created."
+        },
+        "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "The timestamp when the comment was last updated."
+        },
+        "upvotes": {
+            "type": "number",
+            "description": "The number of upvotes the comment has received."
+        },
+        "downvotes": {
+            "type": "number",
+            "description": "The number of downvotes the comment has received."
+        },
+        "voteCount": {
+            "type": "number",
+            "description": "The total score of the comment (upvotes - downvotes)."
         }
       },
       "required": [
         "content",
         "creatorId",
         "creatorDisplayName",
-        "createdAt"
+        "createdAt",
+        "upvotes",
+        "downvotes",
+        "voteCount"
+      ]
+    },
+    "Vote": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Vote",
+      "type": "object",
+      "description": "Represents a user's vote on a post or comment.",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "description": "The UID of the user who voted."
+        },
+        "value": {
+          "type": "number",
+          "description": "The value of the vote: 1 for upvote, -1 for downvote."
+        }
+      },
+      "required": [
+        "userId",
+        "value"
       ]
     }
   },
@@ -218,8 +278,34 @@
             }
           ]
         }
+      },
+      {
+        "path": "/communities/{communityId}/posts/{postId}/votes/{userId}",
+        "definition": {
+          "entityName": "Vote",
+          "schema": {
+            "$ref": "#/backend/entities/Vote"
+          },
+          "description": "Stores user votes for a specific post.",
+          "params": [
+            { "name": "communityId" }, { "name": "postId" }, { "name": "userId" }
+          ]
+        }
+      },
+      {
+        "path": "/communities/{communityId}/posts/{postId}/comments/{commentId}/votes/{userId}",
+        "definition": {
+          "entityName": "Vote",
+          "schema": {
+            "$ref": "#/backend/entities/Vote"
+          },
+          "description": "Stores user votes for a specific comment.",
+          "params": [
+            { "name": "communityId" }, { "name": "postId" }, { "name": "commentId" }, { "name": "userId" }
+          ]
+        }
       }
     ],
-    "reasoning": "The structure allows for nested data. Posts are nested under communities, and comments are nested under posts. This provides a clear hierarchy and allows for efficient querying of related data."
+    "reasoning": "The structure allows for nested data. Posts are nested under communities, and comments are nested under posts. Votes are nested under the content they apply to, which allows for easy lookup of a user's vote on a specific item."
   }
 }

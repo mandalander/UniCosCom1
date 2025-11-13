@@ -168,6 +168,22 @@ export const translations = {
     commentCannotBeEmpty: 'Komentarz nie może być pusty.',
     noCommentsYet: 'Nikt jeszcze nie skomentował tego posta.',
 
+    // Actions (Edit, Delete, Vote)
+    edit: 'Edytuj',
+    delete: 'Usuń',
+    edited: 'edytowano',
+    deleteConfirmationTitle: 'Czy na pewno chcesz usunąć?',
+    deleteConfirmationDescription: 'Tej akcji nie można cofnąć.',
+    deletePostSuccess: 'Post został usunięty.',
+    deleteCommentSuccess: 'Komentarz został usunięty.',
+    update: 'Zaktualizuj',
+    updating: 'Aktualizowanie...',
+    editPostTitle: 'Edytuj post',
+    editCommentTitle: 'Edytuj komentarz',
+    updatePostSuccess: 'Post został zaktualizowany.',
+    updateCommentSuccess: 'Komentarz został zaktualizowany.',
+    voteError: 'Błąd głosowania',
+    mustBeLoggedInToVote: 'Musisz być zalogowany, aby głosować.',
 
     // Metadata
     metaTitle: 'Unicoscom',
@@ -340,6 +356,23 @@ export const translations = {
     typeYourCommentPlaceholder: 'Type your comment...',
     commentCannotBeEmpty: 'Comment cannot be empty.',
     noCommentsYet: 'No one has commented on this post yet.',
+
+    // Actions (Edit, Delete, Vote)
+    edit: 'Edit',
+    delete: 'Delete',
+    edited: 'edited',
+    deleteConfirmationTitle: 'Are you sure you want to delete?',
+    deleteConfirmationDescription: 'This action cannot be undone.',
+    deletePostSuccess: 'Post deleted successfully.',
+    deleteCommentSuccess: 'Comment deleted successfully.',
+    update: 'Update',
+    updating: 'Updating...',
+    editPostTitle: 'Edit Post',
+    editCommentTitle: 'Edit Comment',
+    updatePostSuccess: 'Post updated successfully.',
+    updateCommentSuccess: 'Comment updated successfully.',
+    voteError: 'Vote Error',
+    mustBeLoggedInToVote: 'You must be logged in to vote.',
 
     // Metadata
     metaTitle: 'Unicoscom',

@@ -64,6 +64,9 @@ export function CreatePostForm({ communityId }: CreatePostFormProps) {
       creatorDisplayName: user.displayName || user.email || 'Anonymous',
       creatorPhotoURL: user.photoURL || null,
       createdAt: serverTimestamp(),
+      upvotes: 0,
+      downvotes: 0,
+      voteCount: 0,
     };
     
     addDocumentNonBlocking(postsColRef, postData);
@@ -76,6 +79,18 @@ export function CreatePostForm({ communityId }: CreatePostFormProps) {
     form.reset();
     setIsSubmitting(false);
   };
+  
+  if (!user) {
+    return (
+        <div className="text-center text-muted-foreground p-4 border rounded-md">
+            <p>{t('logInToCreatePost')}</p>
+            <Button onClick={() => router.push('/login')} className="mt-4">
+                {t('login')}
+            </Button>
+        </div>
+    )
+  }
+
 
   return (
     <Form {...form}>

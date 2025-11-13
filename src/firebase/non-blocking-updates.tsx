@@ -8,6 +8,8 @@ import {
   CollectionReference,
   DocumentReference,
   SetOptions,
+  runTransaction,
+  Firestore,
 } from 'firebase/firestore';
 import { errorEmitter } from '@/firebase/error-emitter';
 import {FirestorePermissionError} from '@/firebase/errors';
@@ -85,5 +87,26 @@ export function deleteDocumentNonBlocking(docRef: DocumentReference) {
           operation: 'delete',
         })
       )
+    });
+}
+
+/**
+ * Initiates a Firestore transaction to handle voting logic.
+ * Does NOT await the operation internally.
+ */
+export function runVoteTransaction(db: Firestore, transactionBody: (transaction: any) => Promise<any>) {
+    runTransaction(db, transactionBody).catch(error => {
+        // Since transactions can fail for various reasons (contention, permissions),
+        // we'll emit a generic write error. The specific logic inside the transaction
+        // should handle permission errors if possible, but this is a fallback.
+        console.error("Vote transaction failed: ", error);
+        errorEmitter.emit(
+            'permission-error',
+            new FirestorePermissionError({
+                path: 'unknown/transaction',
+                operation: 'write',
+                requestResourceData: { info: 'Vote transaction failed' }
+            })
+        );
     });
 }

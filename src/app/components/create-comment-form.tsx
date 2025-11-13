@@ -57,6 +57,9 @@ export function CreateCommentForm({ communityId, postId }: CreateCommentFormProp
       creatorDisplayName: user.displayName || user.email || 'Anonymous',
       creatorPhotoURL: user.photoURL || null,
       createdAt: serverTimestamp(),
+      upvotes: 0,
+      downvotes: 0,
+      voteCount: 0,
     };
     
     addDocumentNonBlocking(commentsColRef, commentData);
@@ -68,6 +71,17 @@ export function CreateCommentForm({ communityId, postId }: CreateCommentFormProp
     form.reset();
     setIsSubmitting(false);
   };
+
+   if (!user) {
+    return (
+        <div className="text-center text-muted-foreground">
+            <p>{t('logInToAddComment')}</p>
+            <Button onClick={() => router.push('/login')} className="mt-4" variant="outline">
+                {t('login')}
+            </Button>
+        </div>
+    )
+  }
 
   return (
     <Form {...form}>

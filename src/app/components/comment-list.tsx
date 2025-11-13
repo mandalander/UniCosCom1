@@ -1,6 +1,6 @@
 'use client';
 
-import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
+import { useFirestore, useCollection, useMemoFirebase, useUser } from '@/firebase';
 import { collection, query, orderBy } from 'firebase/firestore';
 import { Card, CardHeader, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -9,13 +9,18 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { User } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { pl, enUS } from 'date-fns/locale';
+import { VoteButtons } from './vote-buttons';
+import { CommentItemActions } from './comment-item-actions';
 
 type Comment = {
   id: string;
   content: string;
+  creatorId: string;
   creatorDisplayName: string;
   creatorPhotoURL?: string;
   createdAt: any;
+  updatedAt?: any;
+  voteCount: number;
 };
 
 interface CommentListProps {
@@ -26,6 +31,7 @@ interface CommentListProps {
 export function CommentList({ communityId, postId }: CommentListProps) {
   const { t, language } = useLanguage();
   const firestore = useFirestore();
+  const { user } = useUser();
 
   const commentsColRef = useMemoFirebase(() => {
     if (!firestore || !communityId || !postId) return null;
@@ -69,23 +75,49 @@ export function CommentList({ communityId, postId }: CommentListProps) {
   return (
     <div className="space-y-4">
       {comments && comments.length > 0 ? (
-        comments.map((comment) => (
-          <Card key={comment.id}>
-             <CardHeader className='flex-row items-center gap-3 space-y-0'>
-                <Avatar className="h-10 w-10">
-                    <AvatarImage src={comment.creatorPhotoURL} />
-                    <AvatarFallback>{getInitials(comment.creatorDisplayName)}</AvatarFallback>
-                </Avatar>
-                <div>
-                    <p className="font-semibold">{comment.creatorDisplayName}</p>
-                    <p className="text-xs text-muted-foreground">{formatDate(comment.createdAt)}</p>
+        comments.map((comment) => {
+            const isOwner = user && user.uid === comment.creatorId;
+            return (
+              <Card key={comment.id} className="flex">
+                 <div className="p-2 flex flex-col items-center bg-muted/50 rounded-l-lg">
+                    <VoteButtons
+                        targetType="comment"
+                        targetId={comment.id}
+                        communityId={communityId}
+                        postId={postId}
+                        initialVoteCount={comment.voteCount}
+                    />
                 </div>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm whitespace-pre-wrap">{comment.content}</p>
-            </CardContent>
-          </Card>
-        ))
+                <div className='flex-1'>
+                    <CardHeader className='flex-row items-center justify-between gap-3 space-y-0 pb-2'>
+                        <div className="flex items-center gap-3">
+                            <Avatar className="h-10 w-10">
+                                <AvatarImage src={comment.creatorPhotoURL} />
+                                <AvatarFallback>{getInitials(comment.creatorDisplayName)}</AvatarFallback>
+                            </Avatar>
+                            <div>
+                                <p className="font-semibold">{comment.creatorDisplayName}</p>
+                                <p className="text-xs text-muted-foreground">
+                                    {formatDate(comment.createdAt)}
+                                    {comment.updatedAt && <span className='italic'> ({t('edited')})</span>}
+                                </p>
+                            </div>
+                        </div>
+                         {isOwner && (
+                            <CommentItemActions 
+                                communityId={communityId} 
+                                postId={postId} 
+                                comment={comment} 
+                            />
+                        )}
+                    </CardHeader>
+                    <CardContent>
+                    <p className="text-sm whitespace-pre-wrap">{comment.content}</p>
+                    </CardContent>
+                </div>
+              </Card>
+            )
+        })
       ) : (
         <p>{t('noCommentsYet')}</p>
       )}
