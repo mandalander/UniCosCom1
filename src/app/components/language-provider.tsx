@@ -5,10 +5,13 @@ import { translations } from '@/lib/translations';
 
 type Language = 'pl' | 'en';
 
+// Add a type for the interpolation values
+type TranslationVariables = { [key: string]: string | number };
+
 type LanguageContextType = {
   language: Language;
   setLanguage: (language: Language) => void;
-  t: (key: keyof typeof translations.pl) => string;
+  t: (key: keyof typeof translations.pl, vars?: TranslationVariables) => string;
 };
 
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
@@ -30,8 +33,17 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
     setLanguageState(lang);
   };
   
-  const t = useMemo(() => (key: keyof typeof translations.pl): string => {
-    return translations[language][key] || key;
+  const t = useMemo(() => (key: keyof typeof translations.pl, vars?: TranslationVariables): string => {
+    let translation = translations[language][key] || key;
+    
+    if (vars) {
+      Object.keys(vars).forEach(varKey => {
+        const regex = new RegExp(`{{${varKey}}}`, 'g');
+        translation = translation.replace(regex, String(vars[varKey]));
+      });
+    }
+
+    return translation;
   }, [language]);
 
 
