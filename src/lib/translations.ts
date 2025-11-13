@@ -126,6 +126,40 @@ export const translations = {
     // Community List
     communitiesTitle: 'Społeczności',
     noCommunitiesYet: 'Nie utworzono jeszcze żadnych społeczności.',
+    communityNotFound: 'Nie znaleziono społeczności.',
+
+    // Posts
+    postsTitle: 'Posty',
+    noPostsYet: 'W tej społeczności nie ma jeszcze żadnych postów.',
+    createNewPost: 'Utwórz nowy post',
+    logInToCreatePost: 'Zaloguj się, aby tworzyć posty.',
+    postTitle: 'Tytuł',
+    postContent: 'Treść',
+    postTitlePlaceholder: 'Wpisz tytuł swojego posta...',
+    postContentPlaceholder: 'Napisz, co Ci w duszy gra...',
+    postTitleMinLength: 'Tytuł musi mieć co najmniej 3 znaki.',
+    postContentMinLength: 'Treść posta nie może być pusta.',
+    mustBeLoggedInToPost: 'Musisz być zalogowany, aby dodać post.',
+    createPost: 'Opublikuj post',
+    creatingPost: 'Publikowanie...',
+    postCreatedSuccessTitle: 'Sukces!',
+    postCreatedSuccessDescription: 'Twój post został opublikowany.',
+    postedBy: 'Opublikowane przez {{name}}',
+    viewPostAndComments: 'Zobacz post i komentarze',
+    postNotFound: 'Nie znaleziono posta.',
+    error: 'Błąd',
+
+    // Comments
+    commentsTitle: 'Komentarze',
+    addComment: 'Dodaj komentarz',
+    logInToAddComment: 'Zaloguj się, aby dodawać komentarze.',
+    commenting: 'Komentowanie...',
+    commentAddedSuccessTitle: 'Komentarz dodany!',
+    mustBeLoggedInToComment: 'Musisz być zalogowany, aby dodać komentarz.',
+    typeYourCommentPlaceholder: 'Napisz komentarz...',
+    commentCannotBeEmpty: 'Komentarz nie może być pusty.',
+    noCommentsYet: 'Nikt jeszcze nie skomentował tego posta.',
+
 
     // Metadata
     metaTitle: 'Unicoscom',
@@ -257,6 +291,39 @@ export const translations = {
     // Community List
     communitiesTitle: 'Communities',
     noCommunitiesYet: 'No communities have been created yet.',
+    communityNotFound: 'Community not found.',
+
+    // Posts
+    postsTitle: 'Posts',
+    noPostsYet: 'There are no posts in this community yet.',
+    createNewPost: 'Create new post',
+    logInToCreatePost: 'Log in to create posts.',
+    postTitle: 'Title',
+    postContent: 'Content',
+    postTitlePlaceholder: 'Enter your post title...',
+    postContentPlaceholder: 'Write what is on your mind...',
+    postTitleMinLength: 'Title must be at least 3 characters long.',
+    postContentMinLength: 'Post content cannot be empty.',
+    mustBeLoggedInToPost: 'You must be logged in to post.',
+    createPost: 'Publish Post',
+    creatingPost: 'Publishing...',
+    postCreatedSuccessTitle: 'Success!',
+    postCreatedSuccessDescription: 'Your post has been published.',
+    postedBy: 'Posted by {{name}}',
+    viewPostAndComments: 'View post and comments',
+    postNotFound: 'Post not found.',
+    error: 'Error',
+
+    // Comments
+    commentsTitle: 'Comments',
+    addComment: 'Add Comment',
+    logInToAddComment: 'Log in to add comments.',
+    commenting: 'Commenting...',
+    commentAddedSuccessTitle: 'Comment added!',
+    mustBeLoggedInToComment: 'You must be logged in to comment.',
+    typeYourCommentPlaceholder: 'Type your comment...',
+    commentCannotBeEmpty: 'Comment cannot be empty.',
+    noCommentsYet: 'No one has commented on this post yet.',
 
     // Metadata
     metaTitle: 'Unicoscom',

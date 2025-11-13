@@ -2,35 +2,33 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
     
-    // Helper function to check if the user is signed in.
     function isSignedIn() {
       return request.auth != null;
     }
 
-    // Helper function to check if the authenticated user is the owner of the document.
     function isOwner(userId) {
       return isSignedIn() && request.auth.uid == userId;
     }
 
-    // Rules for the 'users' collection
     match /users/{userId} {
-      // Allow a user to create their own user document.
-      // The new document's ID must match the user's UID.
-      allow create: if isOwner(userId) && request.resource.data.uid == userId;
-
-      // Allow a user to read, update, or delete their own document.
-      // Do not allow them to change their UID.
-      allow get, delete: if isOwner(userId);
-      allow update: if isOwner(userId) && request.resource.data.uid == resource.data.uid;
+      allow create: if isSignedIn() && request.resource.data.uid == request.auth.uid;
+      allow read, update: if isOwner(userId);
+      allow delete: if isOwner(userId);
     }
     
-    // Rules for the 'communities' collection
     match /communities/{communityId} {
-      // Allow any authenticated user to list, get, and create communities.
       allow list, get, create: if isSignedIn();
-
-      // Allow a user to update or delete a community only if they are the creator.
       allow update, delete: if isSignedIn() && resource.data.creatorId == request.auth.uid;
+
+      match /posts/{postId} {
+        allow list, get, create: if isSignedIn();
+        allow update, delete: if isSignedIn() && resource.data.creatorId == request.auth.uid;
+
+        match /comments/{commentId} {
+          allow list, get, create: if isSignedIn();
+          allow update, delete: if isSignedIn() && resource.data.creatorId == request.auth.uid;
+        }
+      }
     }
   }
 }

@@ -55,6 +55,83 @@
         "creatorId",
         "createdAt"
       ]
+    },
+    "Post": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Post",
+      "type": "object",
+      "description": "Represents a post within a community.",
+      "properties": {
+        "title": {
+          "type": "string",
+          "description": "The title of the post."
+        },
+        "content": {
+          "type": "string",
+          "description": "The content of the post."
+        },
+        "creatorId": {
+          "type": "string",
+          "description": "The UID of the user who created the post."
+        },
+        "creatorDisplayName": {
+          "type": "string",
+          "description": "The display name of the user who created the post."
+        },
+        "creatorPhotoURL": {
+          "type": "string",
+          "format": "uri",
+          "description": "The photo URL of the user who created the post."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "The timestamp when the post was created."
+        }
+      },
+      "required": [
+        "title",
+        "content",
+        "creatorId",
+        "creatorDisplayName",
+        "createdAt"
+      ]
+    },
+    "Comment": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Comment",
+      "type": "object",
+      "description": "Represents a comment on a post.",
+      "properties": {
+        "content": {
+          "type": "string",
+          "description": "The content of the comment."
+        },
+        "creatorId": {
+          "type": "string",
+          "description": "The UID of the user who created the comment."
+        },
+        "creatorDisplayName": {
+          "type": "string",
+          "description": "The display name of the user who created the comment."
+        },
+        "creatorPhotoURL": {
+          "type": "string",
+          "format": "uri",
+          "description": "The photo URL of the user who created the comment."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "The timestamp when the comment was created."
+        }
+      },
+      "required": [
+        "content",
+        "creatorId",
+        "creatorDisplayName",
+        "createdAt"
+      ]
     }
   },
   "auth": {
@@ -97,8 +174,52 @@
             }
           ]
         }
+      },
+      {
+        "path": "/communities/{communityId}/posts/{postId}",
+        "definition": {
+          "entityName": "Post",
+          "schema": {
+            "$ref": "#/backend/entities/Post"
+          },
+          "description": "Stores posts within a community. Any authenticated user can create and view posts.",
+          "params": [
+            {
+              "name": "communityId",
+              "description": "The unique identifier of the community."
+            },
+            {
+              "name": "postId",
+              "description": "The unique identifier of the post."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/communities/{communityId}/posts/{postId}/comments/{commentId}",
+        "definition": {
+          "entityName": "Comment",
+          "schema": {
+            "$ref": "#/backend/entities/Comment"
+          },
+          "description": "Stores comments on a post. Any authenticated user can create and view comments.",
+          "params": [
+            {
+              "name": "communityId",
+              "description": "The unique identifier of the community."
+            },
+            {
+              "name": "postId",
+              "description": "The unique identifier of the post."
+            },
+            {
+              "name": "commentId",
+              "description": "The unique identifier of the comment."
+            }
+          ]
+        }
       }
     ],
-    "reasoning": "The structure is straightforward. The `/users/{userId}` collection uses path-based ownership for secure user data storage. The `/communities` collection is designed for public access among authenticated users, allowing them to list, create, and view communities, with write access (update/delete) restricted to the original creator of a community."
+    "reasoning": "The structure allows for nested data. Posts are nested under communities, and comments are nested under posts. This provides a clear hierarchy and allows for efficient querying of related data."
   }
 }
