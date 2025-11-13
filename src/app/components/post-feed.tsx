@@ -14,6 +14,7 @@ import { pl, enUS } from 'date-fns/locale';
 import { useEffect, useState } from 'react';
 import { PostItemActions } from './post-item-actions';
 import { VoteButtons } from './vote-buttons';
+import { CommentItemActions } from './comment-item-actions';
 
 type Post = {
   id: string;
@@ -32,9 +33,12 @@ type Post = {
 type Comment = {
     id: string;
     content: string;
+    creatorId: string;
     creatorDisplayName: string;
     creatorPhotoURL?: string;
     createdAt: any;
+    updatedAt?: any;
+    voteCount: number;
 }
 
 const PostItem = ({ post }: { post: Post }) => {
@@ -116,20 +120,42 @@ const PostItem = ({ post }: { post: Post }) => {
                         {isLoadingComments ? (
                             <Skeleton className="h-10 w-full" />
                         ) : (
-                            comments.map(comment => (
-                                 <div key={comment.id} className="flex items-start gap-3 text-sm">
-                                    <Avatar className="h-8 w-8">
-                                        <AvatarImage src={comment.creatorPhotoURL} />
-                                        <AvatarFallback>{getInitials(comment.creatorDisplayName)}</AvatarFallback>
-                                    </Avatar>
-                                    <div className='flex-1 rounded-md border bg-muted/50 p-2'>
-                                        <p>
-                                            <span className="font-semibold">{comment.creatorDisplayName}</span>
-                                            <span className='text-muted-foreground'>: {comment.content}</span>
-                                        </p>
+                            comments.map(comment => {
+                                const isCommentOwner = user && user.uid === comment.creatorId;
+                                return (
+                                     <div key={comment.id} className="flex gap-2">
+                                        <div className="flex flex-col items-center pt-2">
+                                            <VoteButtons
+                                                targetType="comment"
+                                                targetId={comment.id}
+                                                communityId={post.communityId}
+                                                postId={post.id}
+                                                initialVoteCount={comment.voteCount}
+                                            />
+                                        </div>
+                                        <div className='flex-1 rounded-md border bg-muted/50 p-2 text-sm'>
+                                            <div className="flex items-center justify-between">
+                                                 <div className="flex items-center gap-2">
+                                                    <Avatar className="h-6 w-6">
+                                                        <AvatarImage src={comment.creatorPhotoURL} />
+                                                        <AvatarFallback className="text-xs">{getInitials(comment.creatorDisplayName)}</AvatarFallback>
+                                                    </Avatar>
+                                                    <span className="font-semibold">{comment.creatorDisplayName}</span>
+                                                    <span className="text-xs text-muted-foreground">{formatDate(comment.createdAt)}</span>
+                                                </div>
+                                                {isCommentOwner && (
+                                                    <CommentItemActions 
+                                                        communityId={post.communityId} 
+                                                        postId={post.id} 
+                                                        comment={comment} 
+                                                    />
+                                                )}
+                                            </div>
+                                            <p className='mt-2 pl-1'>{comment.content}</p>
+                                        </div>
                                     </div>
-                                </div>
-                            ))
+                                )
+                            })
                         )}
                     </div>
                 </CardFooter>
