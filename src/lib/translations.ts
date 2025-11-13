@@ -130,6 +130,7 @@ export const translations = {
 
     // Posts
     postsTitle: 'Posty',
+    latestPosts: 'Najnowsze posty',
     noPostsYet: 'W tej społeczności nie ma jeszcze żadnych postów.',
     createNewPost: 'Utwórz nowy post',
     logInToCreatePost: 'Zaloguj się, aby tworzyć posty.',
@@ -295,6 +296,7 @@ export const translations = {
 
     // Posts
     postsTitle: 'Posts',
+    latestPosts: 'Latest Posts',
     noPostsYet: 'There are no posts in this community yet.',
     createNewPost: 'Create new post',
     logInToCreatePost: 'Log in to create posts.',

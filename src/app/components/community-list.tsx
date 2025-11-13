@@ -3,9 +3,9 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useLanguage } from "./language-provider";
 import { Skeleton } from "@/components/ui/skeleton";
-import Link from 'next/link';
 import { useCollection, useFirestore, useMemoFirebase } from "@/firebase";
 import { collection, query, orderBy } from "firebase/firestore";
+import { CommunityWithPosts } from "./community-with-posts";
 
 type Community = {
   id: string;
@@ -27,19 +27,21 @@ export function CommunityList() {
 
   if (isLoading) {
     return (
-       <div className="space-y-4">
+       <div className="space-y-8">
         <div className="flex items-center gap-2">
             <h2 className="text-2xl font-bold">{t('communitiesTitle')}</h2>
             <Skeleton className="h-6 w-12" />
         </div>
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {[...Array(3)].map((_, i) => (
-            <Card key={i}>
+        <div className="space-y-6">
+          {[...Array(2)].map((_, i) => (
+             <Card key={i}>
               <CardHeader>
-                <Skeleton className="h-6 w-3/4" />
+                <Skeleton className="h-6 w-1/2" />
+                <Skeleton className="h-4 w-3/4" />
               </CardHeader>
-              <CardContent>
-                <Skeleton className="h-4 w-full" />
+              <CardContent className="space-y-4">
+                 <Skeleton className="h-10 w-full" />
+                 <Skeleton className="h-10 w-full" />
               </CardContent>
             </Card>
           ))}
@@ -55,18 +57,9 @@ export function CommunityList() {
             {communities && <span className="text-2xl font-bold text-muted-foreground">({communities.length})</span>}
       </div>
       {communities && communities.length > 0 ? (
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        <div className="space-y-8">
           {communities.map((community) => (
-            <Link key={community.id} href={`/community/${community.id}`} passHref>
-              <Card className="h-full cursor-pointer hover:bg-muted/50 transition-colors">
-                <CardHeader>
-                  <CardTitle>{community.name}</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-muted-foreground line-clamp-2">{community.description}</p>
-                </CardContent>
-              </Card>
-            </Link>
+            <CommunityWithPosts key={community.id} community={community} />
           ))}
         </div>
       ) : (
