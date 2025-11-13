@@ -1,6 +1,5 @@
 'use client';
 import { useLanguage } from "./components/language-provider";
-import { CommunityList } from "./components/community-list";
 
 export default function Home() {
   const { t } = useLanguage();
@@ -12,7 +11,6 @@ export default function Home() {
           <h1 className="text-3xl font-bold">{t('homeTitle')}</h1>
           <p className="text-muted-foreground">{t('homeDescription')}</p>
         </div>
-        <CommunityList />
       </div>
     </div>
   );
