@@ -27,7 +27,7 @@ export function ShareButton({ post }: ShareButtonProps) {
           url: postUrl,
         });
       } catch (error) {
-        console.error('Error sharing:', error);
+        // Silently catch the error, as it's likely the user canceled the share sheet.
       }
     } else {
       try {
