@@ -3,7 +3,7 @@
 import { useParams } from 'next/navigation';
 import { useFirestore, useDoc, useMemoFirebase, useUser } from '@/firebase';
 import { doc } from 'firebase/firestore';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useLanguage } from '@/app/components/language-provider';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -71,40 +71,38 @@ export default function PostPage() {
 
   return (
     <div className="space-y-8">
-      <Card className="flex">
-        <div className="flex flex-col items-center p-2 bg-muted/50 rounded-l-lg">
-             <VoteButtons
+      <Card>
+        <CardHeader>
+            <div className="flex items-start gap-4">
+                <Avatar className="h-12 w-12">
+                    <AvatarImage src={post.creatorPhotoURL} />
+                    <AvatarFallback>{getInitials(post.creatorDisplayName)}</AvatarFallback>
+                </Avatar>
+                <div className="flex-1">
+                   <div className="flex justify-between items-start">
+                        <div>
+                            <CardTitle className="text-2xl">{post.title}</CardTitle>
+                            <p className="text-sm text-muted-foreground">
+                                {t('postedBy', { name: post.creatorDisplayName })} - {formatDate(post.createdAt)}
+                                {post.updatedAt && <span className='text-muted-foreground italic'> ({t('edited')})</span>}
+                            </p>
+                        </div>
+                        {isOwner && <PostItemActions communityId={communityId} post={post} />}
+                   </div>
+                </div>
+            </div>
+        </CardHeader>
+        <CardContent>
+          <p className="whitespace-pre-wrap">{post.content}</p>
+        </CardContent>
+        <CardFooter>
+            <VoteButtons
                 targetType="post"
                 targetId={post.id}
                 communityId={communityId}
                 initialVoteCount={post.voteCount}
             />
-        </div>
-        <div className="flex-1">
-            <CardHeader>
-                <div className="flex items-start gap-4">
-                    <Avatar className="h-12 w-12">
-                        <AvatarImage src={post.creatorPhotoURL} />
-                        <AvatarFallback>{getInitials(post.creatorDisplayName)}</AvatarFallback>
-                    </Avatar>
-                    <div className="flex-1">
-                       <div className="flex justify-between items-start">
-                            <div>
-                                <CardTitle className="text-2xl">{post.title}</CardTitle>
-                                <p className="text-sm text-muted-foreground">
-                                    {t('postedBy', { name: post.creatorDisplayName })} - {formatDate(post.createdAt)}
-                                    {post.updatedAt && <span className='text-muted-foreground italic'> ({t('edited')})</span>}
-                                </p>
-                            </div>
-                            {isOwner && <PostItemActions communityId={communityId} post={post} />}
-                       </div>
-                    </div>
-                </div>
-            </CardHeader>
-            <CardContent>
-              <p className="whitespace-pre-wrap">{post.content}</p>
-            </CardContent>
-        </div>
+        </CardFooter>
       </Card>
       
       <div className="space-y-6">

@@ -75,91 +75,87 @@ const PostItem = ({ post }: { post: Post }) => {
     const isOwner = user && user.uid === post.creatorId;
 
     return (
-        <Card className="flex">
-            <div className="flex flex-col items-center p-2 bg-muted/50 rounded-l-lg">
-               <VoteButtons
-                    targetType="post"
-                    targetId={post.id}
-                    communityId={post.communityId}
-                    initialVoteCount={post.voteCount || 0}
-                />
-            </div>
-            <div className="flex-1">
-                <CardHeader>
-                    <div className="flex items-start gap-4">
-                        <Avatar className="h-10 w-10">
-                            <AvatarImage src={post.creatorPhotoURL} />
-                            <AvatarFallback>{getInitials(post.creatorDisplayName)}</AvatarFallback>
-                        </Avatar>
-                        <div className="flex-1">
-                            <div className="flex justify-between items-start">
-                                <div>
-                                    <CardTitle className='leading-tight text-lg'>{post.title}</CardTitle>
-                                    <CardDescription className='mt-1 text-xs'>
-                                        <Link href={`/community/${post.communityId}`} className="text-primary hover:underline font-semibold">{post.communityName}</Link>
-                                        <span className='mx-1'>•</span>
-                                        {t('postedBy', { name: post.creatorDisplayName })} - {formatDate(post.createdAt)}
-                                        {post.updatedAt && <span className='text-muted-foreground italic text-xs'> ({t('edited')})</span>}
-                                    </CardDescription>
-                                </div>
-                                {isOwner && <PostItemActions communityId={post.communityId} post={post} />}
+        <Card>
+            <CardHeader>
+                <div className="flex items-start gap-4">
+                    <Avatar className="h-10 w-10">
+                        <AvatarImage src={post.creatorPhotoURL} />
+                        <AvatarFallback>{getInitials(post.creatorDisplayName)}</AvatarFallback>
+                    </Avatar>
+                    <div className="flex-1">
+                        <div className="flex justify-between items-start">
+                            <div>
+                                <CardTitle className='leading-tight text-lg'>{post.title}</CardTitle>
+                                <CardDescription className='mt-1 text-xs'>
+                                    <Link href={`/community/${post.communityId}`} className="text-primary hover:underline font-semibold">{post.communityName}</Link>
+                                    <span className='mx-1'>•</span>
+                                    {t('postedBy', { name: post.creatorDisplayName })} - {formatDate(post.createdAt)}
+                                    {post.updatedAt && <span className='text-muted-foreground italic text-xs'> ({t('edited')})</span>}
+                                </CardDescription>
                             </div>
+                            {isOwner && <PostItemActions communityId={post.communityId} post={post} />}
                         </div>
                     </div>
-                </CardHeader>
-                <CardContent>
-                    <p className="line-clamp-4">{post.content}</p>
-                </CardContent>
-                <CardFooter className='flex-col items-start gap-4'>
+                </div>
+            </CardHeader>
+            <CardContent>
+                <p className="line-clamp-4">{post.content}</p>
+            </CardContent>
+            <CardFooter className='flex-col items-start gap-4'>
+                 <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                    <VoteButtons
+                        targetType="post"
+                        targetId={post.id}
+                        communityId={post.communityId}
+                        initialVoteCount={post.voteCount || 0}
+                    />
                      <Link href={`/community/${post.communityId}/post/${post.id}`} passHref>
-                        <Button variant="link" className="p-0 h-auto text-sm">
-                            <MessageSquare className='mr-2 h-4 w-4' /> {t('viewPostAndComments')}
+                        <Button variant="ghost" className="p-2 h-auto text-sm flex items-center gap-2">
+                            <MessageSquare className='h-5 w-5' /> <span>{t('viewPostAndComments')}</span>
                         </Button>
                     </Link>
-                    <div className="w-full space-y-3">
-                        {isLoadingComments ? (
-                            <Skeleton className="h-10 w-full" />
-                        ) : (
-                            comments.map(comment => {
-                                const isCommentOwner = user && user.uid === comment.creatorId;
-                                return (
-                                     <div key={comment.id} className="flex gap-2">
-                                        <div className="flex flex-col items-center pt-2">
-                                            <VoteButtons
-                                                targetType="comment"
-                                                targetId={comment.id}
-                                                communityId={post.communityId}
-                                                postId={post.id}
-                                                initialVoteCount={comment.voteCount || 0}
+                </div>
+                <div className="w-full space-y-3 pl-4 border-l-2">
+                    {isLoadingComments ? (
+                        <Skeleton className="h-10 w-full" />
+                    ) : (
+                        comments.map(comment => {
+                            const isCommentOwner = user && user.uid === comment.creatorId;
+                            return (
+                                 <div key={comment.id} className='text-sm'>
+                                    <div className="flex items-center justify-between">
+                                         <div className="flex items-center gap-2">
+                                            <Avatar className="h-6 w-6">
+                                                <AvatarImage src={comment.creatorPhotoURL} />
+                                                <AvatarFallback className="text-xs">{getInitials(comment.creatorDisplayName)}</AvatarFallback>
+                                            </Avatar>
+                                            <span className="font-semibold">{comment.creatorDisplayName}</span>
+                                            <span className="text-xs text-muted-foreground">{formatDate(comment.createdAt)}</span>
+                                        </div>
+                                        {isCommentOwner && (
+                                            <CommentItemActions 
+                                                communityId={post.communityId} 
+                                                postId={post.id} 
+                                                comment={comment} 
                                             />
-                                        </div>
-                                        <div className='flex-1 rounded-md border bg-muted/50 p-2 text-sm'>
-                                            <div className="flex items-center justify-between">
-                                                 <div className="flex items-center gap-2">
-                                                    <Avatar className="h-6 w-6">
-                                                        <AvatarImage src={comment.creatorPhotoURL} />
-                                                        <AvatarFallback className="text-xs">{getInitials(comment.creatorDisplayName)}</AvatarFallback>
-                                                    </Avatar>
-                                                    <span className="font-semibold">{comment.creatorDisplayName}</span>
-                                                    <span className="text-xs text-muted-foreground">{formatDate(comment.createdAt)}</span>
-                                                </div>
-                                                {isCommentOwner && (
-                                                    <CommentItemActions 
-                                                        communityId={post.communityId} 
-                                                        postId={post.id} 
-                                                        comment={comment} 
-                                                    />
-                                                )}
-                                            </div>
-                                            <p className='mt-2 pl-1'>{comment.content}</p>
-                                        </div>
+                                        )}
                                     </div>
-                                )
-                            })
-                        )}
-                    </div>
-                </CardFooter>
-            </div>
+                                    <p className='mt-2 pl-8'>{comment.content}</p>
+                                    <div className="pl-8 mt-2">
+                                        <VoteButtons
+                                            targetType="comment"
+                                            targetId={comment.id}
+                                            communityId={post.communityId}
+                                            postId={post.id}
+                                            initialVoteCount={comment.voteCount || 0}
+                                        />
+                                    </div>
+                                </div>
+                            )
+                        })
+                    )}
+                </div>
+            </CardFooter>
         </Card>
     )
 }

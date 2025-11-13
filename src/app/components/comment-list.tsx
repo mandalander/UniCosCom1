@@ -2,7 +2,7 @@
 
 import { useFirestore, useCollection, useMemoFirebase, useUser } from '@/firebase';
 import { collection, query, orderBy } from 'firebase/firestore';
-import { Card, CardHeader, CardContent } from '@/components/ui/card';
+import { Card, CardHeader, CardContent, CardFooter } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useLanguage } from '@/app/components/language-provider';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -78,8 +78,33 @@ export function CommentList({ communityId, postId }: CommentListProps) {
         comments.map((comment) => {
             const isOwner = user && user.uid === comment.creatorId;
             return (
-              <Card key={comment.id} className="flex">
-                 <div className="p-2 flex flex-col items-center bg-muted/50 rounded-l-lg">
+              <Card key={comment.id}>
+                <CardHeader className='flex-row items-center justify-between gap-3 space-y-0 pb-2'>
+                    <div className="flex items-center gap-3">
+                        <Avatar className="h-10 w-10">
+                            <AvatarImage src={comment.creatorPhotoURL} />
+                            <AvatarFallback>{getInitials(comment.creatorDisplayName)}</AvatarFallback>
+                        </Avatar>
+                        <div>
+                            <p className="font-semibold">{comment.creatorDisplayName}</p>
+                            <p className="text-xs text-muted-foreground">
+                                {formatDate(comment.createdAt)}
+                                {comment.updatedAt && <span className='italic'> ({t('edited')})</span>}
+                            </p>
+                        </div>
+                    </div>
+                     {isOwner && (
+                        <CommentItemActions 
+                            communityId={communityId} 
+                            postId={postId} 
+                            comment={comment} 
+                        />
+                    )}
+                </CardHeader>
+                <CardContent>
+                <p className="text-sm whitespace-pre-wrap">{comment.content}</p>
+                </CardContent>
+                 <CardFooter>
                     <VoteButtons
                         targetType="comment"
                         targetId={comment.id}
@@ -87,34 +112,7 @@ export function CommentList({ communityId, postId }: CommentListProps) {
                         postId={postId}
                         initialVoteCount={comment.voteCount}
                     />
-                </div>
-                <div className='flex-1'>
-                    <CardHeader className='flex-row items-center justify-between gap-3 space-y-0 pb-2'>
-                        <div className="flex items-center gap-3">
-                            <Avatar className="h-10 w-10">
-                                <AvatarImage src={comment.creatorPhotoURL} />
-                                <AvatarFallback>{getInitials(comment.creatorDisplayName)}</AvatarFallback>
-                            </Avatar>
-                            <div>
-                                <p className="font-semibold">{comment.creatorDisplayName}</p>
-                                <p className="text-xs text-muted-foreground">
-                                    {formatDate(comment.createdAt)}
-                                    {comment.updatedAt && <span className='italic'> ({t('edited')})</span>}
-                                </p>
-                            </div>
-                        </div>
-                         {isOwner && (
-                            <CommentItemActions 
-                                communityId={communityId} 
-                                postId={postId} 
-                                comment={comment} 
-                            />
-                        )}
-                    </CardHeader>
-                    <CardContent>
-                    <p className="text-sm whitespace-pre-wrap">{comment.content}</p>
-                    </CardContent>
-                </div>
+                </CardFooter>
               </Card>
             )
         })

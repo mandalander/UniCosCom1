@@ -122,25 +122,31 @@ export function VoteButtons({ targetType, targetId, communityId, postId, initial
   };
 
   return (
-    <div className="flex flex-col items-center gap-1">
+    <div className="flex items-center gap-1 rounded-full bg-muted p-1">
       <Button
         variant="ghost"
         size="icon"
-        className={cn("h-7 w-7", userVote === 1 && "text-primary bg-primary/20")}
+        className={cn(
+            "h-7 w-7 rounded-full", 
+            userVote === 1 && "bg-primary text-primary-foreground hover:bg-primary/90 hover:text-primary-foreground"
+        )}
         onClick={() => handleVote(1)}
         disabled={isVoting}
       >
-        <ArrowBigUp className="h-5 w-5" />
+        <ArrowBigUp className={cn("h-5 w-5", userVote === 1 && "fill-current")} />
       </Button>
-      <span className="text-sm font-bold min-w-[20px] text-center">{voteCount}</span>
+      <span className="text-sm font-bold min-w-[24px] text-center tabular-nums">{voteCount}</span>
       <Button
         variant="ghost"
         size="icon"
-        className={cn("h-7 w-7", userVote === -1 && "text-blue-600 bg-blue-600/20")}
+        className={cn(
+            "h-7 w-7 rounded-full", 
+            userVote === -1 && "bg-blue-600 text-white hover:bg-blue-600/90 hover:text-white"
+        )}
         onClick={() => handleVote(-1)}
         disabled={isVoting}
       >
-        <ArrowBigDown className="h-5 w-5" />
+        <ArrowBigDown className={cn("h-5 w-5", userVote === -1 && "fill-current")} />
       </Button>
     </div>
   );
