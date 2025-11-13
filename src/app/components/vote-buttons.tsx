@@ -25,12 +25,12 @@ export function VoteButtons({ targetType, targetId, communityId, postId, initial
   const router = useRouter();
   const { t } = useLanguage();
 
-  const [voteCount, setVoteCount] = useState(initialVoteCount);
+  const [voteCount, setVoteCount] = useState(initialVoteCount || 0);
   const [userVote, setUserVote] = useState<number | null>(null); // 1 for up, -1 for down, null for none
   const [isVoting, setIsVoting] = useState(false);
 
   useEffect(() => {
-    setVoteCount(initialVoteCount);
+    setVoteCount(initialVoteCount || 0);
   }, [initialVoteCount]);
 
   useEffect(() => {
@@ -73,7 +73,7 @@ export function VoteButtons({ targetType, targetId, communityId, postId, initial
 
     // Optimistic UI update
     let voteChange = newVoteValue - voteValueBefore;
-    setVoteCount(prev => prev + voteChange);
+    setVoteCount(prev => (prev || 0) + voteChange);
     setUserVote(newVoteValue === 0 ? null : newVoteValue);
 
 
@@ -109,7 +109,7 @@ export function VoteButtons({ targetType, targetId, communityId, postId, initial
     } catch (e) {
       console.error(e);
       // Revert optimistic update on failure
-      setVoteCount(prev => prev - voteChange);
+      setVoteCount(prev => (prev || 0) - voteChange);
       setUserVote(voteValueBefore === 0 ? null : voteValueBefore);
       toast({
         variant: 'destructive',

@@ -81,7 +81,7 @@ const PostItem = ({ post }: { post: Post }) => {
                     targetType="post"
                     targetId={post.id}
                     communityId={post.communityId}
-                    initialVoteCount={post.voteCount}
+                    initialVoteCount={post.voteCount || 0}
                 />
             </div>
             <div className="flex-1">
@@ -130,7 +130,7 @@ const PostItem = ({ post }: { post: Post }) => {
                                                 targetId={comment.id}
                                                 communityId={post.communityId}
                                                 postId={post.id}
-                                                initialVoteCount={comment.voteCount}
+                                                initialVoteCount={comment.voteCount || 0}
                                             />
                                         </div>
                                         <div className='flex-1 rounded-md border bg-muted/50 p-2 text-sm'>
