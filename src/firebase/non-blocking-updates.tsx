@@ -10,6 +10,7 @@ import {
   SetOptions,
   runTransaction,
   Firestore,
+  Transaction,
 } from 'firebase/firestore';
 import { errorEmitter } from '@/firebase/error-emitter';
 import {FirestorePermissionError} from '@/firebase/errors';
@@ -18,13 +19,14 @@ import {FirestorePermissionError} from '@/firebase/errors';
  * Initiates a setDoc operation for a document reference.
  * Does NOT await the write operation internally.
  */
-export function setDocumentNonBlocking(docRef: DocumentReference, data: any, options: SetOptions) {
-  setDoc(docRef, data, options).catch(error => {
+export function setDocumentNonBlocking(docRef: DocumentReference, data: any, options?: SetOptions) {
+  const operation = options && 'merge' in options ? 'update' : 'create';
+  setDoc(docRef, data, options || {}).catch(error => {
     errorEmitter.emit(
       'permission-error',
       new FirestorePermissionError({
         path: docRef.path,
-        operation: 'write', // or 'create'/'update' based on options
+        operation: operation,
         requestResourceData: data,
       })
     )
@@ -92,21 +94,13 @@ export function deleteDocumentNonBlocking(docRef: DocumentReference) {
 
 /**
  * Initiates a Firestore transaction to handle voting logic.
- * Does NOT await the operation internally.
+ * Wraps runTransaction to provide a more specific error on failure.
  */
-export function runVoteTransaction(db: Firestore, transactionBody: (transaction: any) => Promise<any>) {
-    runTransaction(db, transactionBody).catch(error => {
-        // Since transactions can fail for various reasons (contention, permissions),
-        // we'll emit a generic write error. The specific logic inside the transaction
-        // should handle permission errors if possible, but this is a fallback.
+export function runVoteTransaction(db: Firestore, transactionBody: (transaction: Transaction) => Promise<any>): Promise<void> {
+    return runTransaction(db, transactionBody).catch(error => {
         console.error("Vote transaction failed: ", error);
-        errorEmitter.emit(
-            'permission-error',
-            new FirestorePermissionError({
-                path: 'unknown/transaction',
-                operation: 'write',
-                requestResourceData: { info: 'Vote transaction failed' }
-            })
-        );
+        // We re-throw the error to be handled by the caller,
+        // which has more context to revert UI changes.
+        throw new Error("Wystąpił błąd podczas zapisywania głosu. Spróbuj ponownie.");
     });
 }

@@ -47,6 +47,8 @@ export function VoteButtons({ targetType, targetId, communityId, postId, initial
         const voteSnap = await getDoc(voteRef);
         if (voteSnap.exists()) {
           setUserVote(voteSnap.data().value);
+        } else {
+          setUserVote(null);
         }
       }
     };
@@ -66,70 +68,49 @@ export function VoteButtons({ targetType, targetId, communityId, postId, initial
 
     setIsVoting(true);
 
+    const voteValueBefore = userVote || 0;
     const newVoteValue = userVote === newVote ? 0 : newVote;
 
-    const transactionBody = async (transaction: any) => {
-      let targetRef;
-      let voteRef;
+    // Optimistic UI update
+    let voteChange = newVoteValue - voteValueBefore;
+    setVoteCount(prev => prev + voteChange);
+    setUserVote(newVoteValue === 0 ? null : newVoteValue);
 
-      if (targetType === 'post') {
-        targetRef = doc(firestore, 'communities', communityId, 'posts', targetId);
-        voteRef = doc(firestore, 'communities', communityId, 'posts', targetId, 'votes', user.uid);
-      } else {
-        targetRef = doc(firestore, 'communities', communityId, 'posts', postId!, 'comments', targetId);
-        voteRef = doc(firestore, 'communities', communityId, 'posts', postId!, 'comments', targetId, 'votes', user.uid);
-      }
-      
-      const voteDoc = await transaction.get(voteRef);
-      const currentVote = voteDoc.exists() ? voteDoc.data().value : 0;
-
-      let upvotesIncrement = 0;
-      let downvotesIncrement = 0;
-
-      if (newVoteValue === 1) { // New upvote
-        upvotesIncrement = 1;
-        if (currentVote === -1) downvotesIncrement = -1;
-      } else if (newVoteValue === -1) { // New downvote
-        downvotesIncrement = 1;
-        if (currentVote === 1) upvotesIncrement = -1;
-      } else { // Clearing vote
-        if (currentVote === 1) upvotesIncrement = -1;
-        if (currentVote === -1) downvotesIncrement = -1;
-      }
-
-      const voteCountIncrement = upvotesIncrement - downvotesIncrement;
-
-      transaction.update(targetRef, {
-        upvotes: increment(upvotesIncrement),
-        downvotes: increment(downvotesIncrement),
-        voteCount: increment(voteCountIncrement),
-      });
-
-      if (newVoteValue === 0) {
-        transaction.delete(voteRef);
-      } else {
-        transaction.set(voteRef, { value: newVoteValue });
-      }
-    };
 
     try {
-        await runVoteTransaction(firestore, transactionBody);
-        
-        let voteChange = 0;
-        if (userVote === newVote) { // un-voting
-            voteChange = -newVote;
-            setUserVote(null);
-        } else if (userVote !== null) { // changing vote
-            voteChange = 2 * newVote;
-            setUserVote(newVote);
-        } else { // new vote
-            voteChange = newVote;
-            setUserVote(newVote);
-        }
-        setVoteCount(prev => prev + voteChange);
+        let targetRef, voteRef;
 
+        if (targetType === 'post') {
+            targetRef = doc(firestore, 'communities', communityId, 'posts', targetId);
+            voteRef = doc(firestore, 'communities', communityId, 'posts', targetId, 'votes', user.uid);
+        } else if (postId) {
+            targetRef = doc(firestore, 'communities', communityId, 'posts', postId, 'comments', targetId);
+            voteRef = doc(firestore, 'communities', communityId, 'posts', postId, 'comments', targetId, 'votes', user.uid);
+        } else {
+            throw new Error("postId is required for comment votes");
+        }
+
+        await runVoteTransaction(firestore, async (transaction) => {
+            const voteDoc = await transaction.get(voteRef);
+            const currentVoteOnDb = voteDoc.exists() ? voteDoc.data().value : 0;
+            
+            const voteDifference = newVoteValue - currentVoteOnDb;
+            
+            transaction.update(targetRef, { 
+                voteCount: increment(voteDifference)
+            });
+
+            if (newVoteValue === 0) {
+                transaction.delete(voteRef);
+            } else {
+                transaction.set(voteRef, { value: newVoteValue, userId: user.uid });
+            }
+        });
     } catch (e) {
       console.error(e);
+      // Revert optimistic update on failure
+      setVoteCount(prev => prev - voteChange);
+      setUserVote(voteValueBefore === 0 ? null : voteValueBefore);
       toast({
         variant: 'destructive',
         title: t('voteError'),
