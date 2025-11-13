@@ -59,6 +59,8 @@ export const translations = {
     editProfile: 'Edytuj profil',
     publicProfileTitle: 'Profil użytkownika',
     userPosts: 'Posty użytkownika {{username}}',
+    userHasNoPosts: 'Ten użytkownik nie opublikował jeszcze żadnych postów.',
+    userNotFound: 'Nie znaleziono użytkownika.',
 
 
     // Edit Profile Page
@@ -153,6 +155,7 @@ export const translations = {
     postCreatedSuccessDescription: 'Twój post został opublikowany.',
     postedBy: 'Opublikowane przez {{name}}',
     postedByPrefix: 'Opublikowane przez',
+    postedTo: 'Opublikowano w',
     viewPostAndComments: 'Zobacz post i komentarze',
     postNotFound: 'Nie znaleziono posta.',
     error: 'Błąd',
@@ -256,6 +259,8 @@ export const translations = {
     editProfile: 'Edit Profile',
     publicProfileTitle: 'User Profile',
     userPosts: "Posts by {{username}}",
+    userHasNoPosts: 'This user has not published any posts yet.',
+    userNotFound: 'User not found.',
     
     // Edit Profile Page
     editProfileTitle: 'Edit Profile',
@@ -348,6 +353,7 @@ export const translations = {
     postCreatedSuccessDescription: 'Your post has been published.',
     postedBy: 'Posted by {{name}}',
     postedByPrefix: 'Posted by',
+    postedTo: 'Posted to',
     viewPostAndComments: 'View post and comments',
     postNotFound: 'Post not found.',
     error: 'Error',
