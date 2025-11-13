@@ -37,13 +37,13 @@ export default function CommunityPage() {
 
   const communityDocRef = useMemoFirebase(() => {
     // Wait for user loading to complete before creating the ref
-    if (!firestore || !communityId || isUserLoading) return null;
+    if (isUserLoading || !firestore || !communityId) return null;
     return doc(firestore, 'communities', communityId);
   }, [firestore, communityId, isUserLoading]);
 
   const postsColRef = useMemoFirebase(() => {
     // Wait for user loading to complete
-    if (!firestore || !communityId || isUserLoading) return null;
+    if (isUserLoading || !firestore || !communityId) return null;
     return query(collection(firestore, 'communities', communityId, 'posts'), orderBy('createdAt', 'desc'));
   }, [firestore, communityId, isUserLoading]);
 
