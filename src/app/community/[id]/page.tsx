@@ -3,7 +3,7 @@
 import { useParams } from 'next/navigation';
 import { useFirestore, useDoc, useCollection, useMemoFirebase, useUser } from '@/firebase';
 import { doc, collection, query, orderBy } from 'firebase/firestore';
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
+import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useLanguage } from '@/app/components/language-provider';
 import { CreatePostForm } from '@/app/components/create-post-form';
