@@ -32,18 +32,20 @@ type Post = {
 export default function CommunityPage() {
   const { id: communityId } = useParams<{ id: string }>();
   const { t, language } = useLanguage();
-  const { user } = useUser();
+  const { user, isUserLoading } = useUser();
   const firestore = useFirestore();
 
   const communityDocRef = useMemoFirebase(() => {
-    if (!firestore || !communityId) return null;
+    // Wait for user loading to complete before creating the ref
+    if (!firestore || !communityId || isUserLoading) return null;
     return doc(firestore, 'communities', communityId);
-  }, [firestore, communityId]);
+  }, [firestore, communityId, isUserLoading]);
 
   const postsColRef = useMemoFirebase(() => {
-    if (!firestore || !communityId) return null;
+    // Wait for user loading to complete
+    if (!firestore || !communityId || isUserLoading) return null;
     return query(collection(firestore, 'communities', communityId, 'posts'), orderBy('createdAt', 'desc'));
-  }, [firestore, communityId]);
+  }, [firestore, communityId, isUserLoading]);
 
   const { data: community, isLoading: isCommunityLoading } = useDoc<Community>(communityDocRef);
   const { data: posts, isLoading: arePostsLoading } = useCollection<Post>(postsColRef);
@@ -58,7 +60,7 @@ export default function CommunityPage() {
     return name ? name.charAt(0).toUpperCase() : <User className="h-5 w-5" />;
   };
 
-  const isLoading = isCommunityLoading || arePostsLoading;
+  const isLoading = isCommunityLoading || arePostsLoading || isUserLoading;
 
   if (isLoading) {
     return (
