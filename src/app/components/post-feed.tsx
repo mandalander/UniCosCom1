@@ -145,9 +145,9 @@ export function PostFeed() {
 
       const postsData = (await Promise.all(postsDataPromises)).filter((p): p is Post => p !== null);
 
-      postsData.sort((a, b) => b.createdAt.toDate() - a.createdAt.toDate());
+      postsData.sort((a, b) => b.createdAt.toMillis() - a.createdAt.toMillis());
 
-      setPosts(postsData.slice(0, 10)); // Ensure we only show 10 posts after sorting.
+      setPosts(postsData.slice(0, 10));
       setIsLoading(false);
     };
 
