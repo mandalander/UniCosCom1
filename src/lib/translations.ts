@@ -123,6 +123,10 @@ export const translations = {
     communityName: 'Nazwa',
     communityDescription: 'Opis',
 
+    // Community List
+    communitiesTitle: 'Społeczności',
+    noCommunitiesYet: 'Nie utworzono jeszcze żadnych społeczności.',
+
     // Metadata
     metaTitle: 'Unicoscom',
     metaDescription: 'Unicoscom - Unikalny Kosmos Komunikacji i Społeczności.',
@@ -249,6 +253,10 @@ export const translations = {
     createCommunityDescription: 'Fill in the fields below to create a new community.',
     communityName: 'Name',
     communityDescription: 'Description',
+
+    // Community List
+    communitiesTitle: 'Communities',
+    noCommunitiesYet: 'No communities have been created yet.',
 
     // Metadata
     metaTitle: 'Unicoscom',

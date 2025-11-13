@@ -29,7 +29,7 @@ export function CommunityList() {
     return (
        <div className="space-y-4">
         <div className="flex items-center gap-2">
-            <h2 className="text-2xl font-bold">Społeczności</h2>
+            <h2 className="text-2xl font-bold">{t('communitiesTitle')}</h2>
             <Skeleton className="h-6 w-12" />
         </div>
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
@@ -51,7 +51,7 @@ export function CommunityList() {
   return (
     <div className="space-y-4">
        <div className="flex items-center gap-2">
-            <h2 className="text-2xl font-bold">Społeczności</h2>
+            <h2 className="text-2xl font-bold">{t('communitiesTitle')}</h2>
             {communities && <span className="text-2xl font-bold text-muted-foreground">({communities.length})</span>}
       </div>
       {communities && communities.length > 0 ? (
@@ -70,7 +70,7 @@ export function CommunityList() {
           ))}
         </div>
       ) : (
-        <p>Nie utworzono jeszcze żadnych społeczności.</p>
+        <p>{t('noCommunitiesYet')}</p>
       )}
     </div>
   );

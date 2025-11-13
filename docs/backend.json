@@ -25,12 +25,43 @@
         "username",
         "email"
       ]
+    },
+    "Community": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Community",
+      "type": "object",
+      "description": "Represents a user-created community.",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "The name of the community."
+        },
+        "description": {
+          "type": "string",
+          "description": "A short description of the community."
+        },
+        "creatorId": {
+          "type": "string",
+          "description": "The UID of the user who created the community."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "The timestamp when the community was created."
+        }
+      },
+      "required": [
+        "name",
+        "creatorId",
+        "createdAt"
+      ]
     }
   },
   "auth": {
     "providers": [
       "password",
-      "anonymous"
+      "anonymous",
+      "google.com"
     ]
   },
   "firestore": {
@@ -50,8 +81,24 @@
             }
           ]
         }
+      },
+      {
+        "path": "/communities/{communityId}",
+        "definition": {
+          "entityName": "Community",
+          "schema": {
+            "$ref": "#/backend/entities/Community"
+          },
+          "description": "Stores community data. Any authenticated user can create and view communities.",
+          "params": [
+            {
+              "name": "communityId",
+              "description": "The unique identifier of the community."
+            }
+          ]
+        }
       }
     ],
-    "reasoning": "Given the limited scope of the application (App Navigator with user authentication and a UI consisting of a top navigation bar and sidebar), the Firestore structure is relatively straightforward. We primarily need a place to store user data. The design prioritizes Authorization Independence. Since there are no collaborative features or complex relationships described, a simple path-based ownership model is sufficient and highly secure. This approach allows for clear security rules based solely on the `request.auth.uid`, avoiding any `get()` calls and ensuring atomicity.\n\n**Authorization Independence**: Achieved through path-based ownership in `/users/{userId}`. No denormalization is needed because there are no subcollections or collaborative features requiring inherited access rights.\n\n**QAPs**: Secure `list` operations are naturally supported because each user's data is isolated under their respective `/users/{userId}` path. Listing users is not a requirement based on the given info."
+    "reasoning": "The structure is straightforward. The `/users/{userId}` collection uses path-based ownership for secure user data storage. The `/communities` collection is designed for public access among authenticated users, allowing them to list, create, and view communities, with write access (update/delete) restricted to the original creator of a community."
   }
 }
