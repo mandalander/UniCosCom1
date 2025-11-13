@@ -13,8 +13,20 @@ service cloud.firestore {
       allow read, write: if isOwner(userId);
     }
 
-    match /communities/{document=**} {
-      allow read, write: if isSignedIn();
+    /**
+     * @description Allow logged-in users to list the communities collection.
+     * @path /communities
+     */
+    match /communities {
+      allow list: if isSignedIn();
+    }
+
+    /**
+     * @description Allow logged-in users to read, create and write individual community documents.
+     * @path /communities/{communityId}
+     */
+    match /communities/{communityId} {
+      allow get, create, write: if isSignedIn();
     }
 
 
