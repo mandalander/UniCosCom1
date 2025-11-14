@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { ArrowBigUp, ArrowBigDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useUser, useFirestore, runVoteTransaction, addDocumentNonBlocking } from '@/firebase';
-import { doc, getDoc, Transaction, collection, serverTimestamp, DocumentData, CollectionReference } from 'firebase/firestore';
+import { doc, getDoc, Transaction, collection, serverTimestamp, DocumentData } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
 import { useRouter } from 'next/navigation';
 import { useLanguage } from '@/app/components/language-provider';
@@ -65,7 +65,7 @@ export function VoteButtons({ targetType, targetId, creatorId, communityId, post
 
   const createNotification = (targetAuthorId: string) => {
     if (!user || !firestore || user.uid === targetAuthorId) {
-      return Promise.resolve();
+      return;
     }
 
     const notificationsRef = collection(firestore, 'userProfiles', targetAuthorId, 'notifications');
@@ -82,7 +82,7 @@ export function VoteButtons({ targetType, targetId, creatorId, communityId, post
         read: false,
         createdAt: serverTimestamp(),
     };
-    return addDocumentNonBlocking(notificationsRef, notificationData);
+    addDocumentNonBlocking(notificationsRef, notificationData);
   };
 
 
@@ -144,23 +144,9 @@ export function VoteButtons({ targetType, targetId, creatorId, communityId, post
         operation: 'write', 
         requestResourceData: newVoteValue === 0 ? undefined : { value: newVoteValue, userId: user.uid }
     }).then(() => {
-        if (newVoteValue === 1) {
-            createNotification(creatorId).catch(error => {
-                if(firestore && user) {
-                    const notificationsRef = collection(firestore, 'userProfiles', creatorId, 'notifications');
-                    const permissionError = new FirestorePermissionError({
-                        path: notificationsRef.path,
-                        operation: 'create',
-                        requestResourceData: { /* Recreate data for context */
-                            recipientId: creatorId,
-                            type: 'vote',
-                            targetType: targetType,
-                            targetId: targetId,
-                        }
-                    });
-                    errorEmitter.emit('permission-error', permissionError);
-                }
-            });
+        // On success, create a notification if it's an upvote
+        if(newVoteValue === 1) {
+            createNotification(creatorId);
         }
     }).catch((e) => {
       // Revert optimistic update on any failure
