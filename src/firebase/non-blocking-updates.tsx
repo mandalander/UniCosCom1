@@ -11,7 +11,6 @@ import {
   runTransaction,
   Firestore,
   Transaction,
-  increment,
   DocumentData,
 } from 'firebase/firestore';
 import { errorEmitter } from '@/firebase/error-emitter';
@@ -43,8 +42,19 @@ export function setDocumentNonBlocking(docRef: DocumentReference, data: any, opt
  * Returns the Promise so the caller can chain .then() or .catch().
  */
 export function addDocumentNonBlocking(colRef: CollectionReference<DocumentData>, data: any): Promise<DocumentReference<DocumentData>> {
-  // Return the promise directly. The caller is responsible for handling it.
-  return addDoc(colRef, data);
+  // Return the promise directly, but add a catch block to emit contextual errors.
+  const promise = addDoc(colRef, data);
+  promise.catch(error => {
+    errorEmitter.emit(
+        'permission-error',
+        new FirestorePermissionError({
+            path: colRef.path,
+            operation: 'create',
+            requestResourceData: data,
+        })
+    );
+  });
+  return promise;
 }
 
 
