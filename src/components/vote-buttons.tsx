@@ -146,18 +146,20 @@ export function VoteButtons({ targetType, targetId, creatorId, communityId, post
     }).then(() => {
         if (newVoteValue === 1) {
             createNotification(creatorId).catch(error => {
-                const notificationsRef = collection(firestore, 'userProfiles', creatorId, 'notifications');
-                const permissionError = new FirestorePermissionError({
-                    path: notificationsRef.path,
-                    operation: 'create',
-                    requestResourceData: { /* Recreate data for context */
-                        recipientId: creatorId,
-                        type: 'vote',
-                        targetType: targetType,
-                        targetId: targetId,
-                    }
-                });
-                errorEmitter.emit('permission-error', permissionError);
+                if(firestore && user) {
+                    const notificationsRef = collection(firestore, 'userProfiles', creatorId, 'notifications');
+                    const permissionError = new FirestorePermissionError({
+                        path: notificationsRef.path,
+                        operation: 'create',
+                        requestResourceData: { /* Recreate data for context */
+                            recipientId: creatorId,
+                            type: 'vote',
+                            targetType: targetType,
+                            targetId: targetId,
+                        }
+                    });
+                    errorEmitter.emit('permission-error', permissionError);
+                }
             });
         }
     }).catch((e) => {
