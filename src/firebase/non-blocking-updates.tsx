@@ -107,9 +107,10 @@ export function runVoteTransaction(
              // Create and emit the detailed, contextual error
             const permissionError = new FirestorePermissionError(errorContext);
             errorEmitter.emit('permission-error', permissionError);
-            // We still throw the permission error so the UI can revert state,
-            // but the important part is that the contextual error was emitted.
-            throw permissionError;
+            
+            // IMPORTANT: Reject the promise so that the calling UI can revert its state,
+            // but we've already emitted the rich error for debugging.
+            return Promise.reject(permissionError);
         }
         
         // For other types of errors, re-throw the original error
