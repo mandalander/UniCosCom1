@@ -30,7 +30,7 @@ export function setDocumentNonBlocking(docRef: DocumentReference, data: any, opt
       requestResourceData: data,
     });
     errorEmitter.emit('permission-error', permissionError);
-    return Promise.reject(permissionError); // Propagate rejection
+    // Propagate rejection
   })
 }
 
@@ -69,7 +69,7 @@ export function updateDocumentNonBlocking(docRef: DocumentReference, data: any) 
         requestResourceData: data,
       });
       errorEmitter.emit('permission-error', permissionError);
-      return Promise.reject(permissionError); // Propagate rejection
+      // Propagate rejection
     });
 }
 
@@ -86,7 +86,7 @@ export function deleteDocumentNonBlocking(docRef: DocumentReference) {
         operation: 'delete',
       });
       errorEmitter.emit('permission-error', permissionError);
-      return Promise.reject(permissionError); // Propagate rejection
+      // Propagate rejection
     });
 }
 

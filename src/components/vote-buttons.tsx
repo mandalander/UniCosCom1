@@ -146,12 +146,7 @@ export function VoteButtons({ targetType, targetId, creatorId, communityId, post
     }).then(() => {
         // On success, create a notification if it's an upvote
         if(newVoteValue === 1) {
-           createNotification(creatorId).catch((e) => {
-             // The vote succeeded, but notification failed.
-             // The error has already been emitted globally by addDocumentNonBlocking.
-             // We don't need to show a toast here, as the user doesn't need to know about this specific failure.
-             console.warn("Failed to create notification, but vote was successful.", e);
-           });
+           createNotification(creatorId);
         }
     }).catch((e) => {
       // Revert optimistic update on any failure
