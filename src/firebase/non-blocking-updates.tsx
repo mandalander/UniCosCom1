@@ -98,7 +98,7 @@ export function runVoteTransaction(
     db: Firestore, 
     transactionBody: (transaction: Transaction) => Promise<any>,
     errorContext: SecurityRuleContext
-): Promise<void> {
+): Promise<any> {
     return runTransaction(db, transactionBody).catch(serverError => {
         // Check if the error is likely a permission error
         if (serverError && (serverError.code === 'permission-denied' || serverError.code === 'unauthenticated')) {
