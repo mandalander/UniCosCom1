@@ -106,8 +106,7 @@ export function runVoteTransaction(
             const permissionError = new FirestorePermissionError(errorContext);
             errorEmitter.emit('permission-error', permissionError);
             
-            // IMPORTANT: Reject the promise so that the calling UI can revert its state,
-            // but we've already emitted the rich error for debugging.
+            // IMPORTANT: Reject the promise so that the calling UI can revert its state.
             return Promise.reject(permissionError);
         }
         
