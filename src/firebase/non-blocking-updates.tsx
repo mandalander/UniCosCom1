@@ -30,6 +30,7 @@ export function setDocumentNonBlocking(docRef: DocumentReference, data: any, opt
       requestResourceData: data,
     });
     errorEmitter.emit('permission-error', permissionError);
+    // IMPORTANT: Reject the promise to allow the caller to handle the failure.
     return Promise.reject(permissionError);
   })
 }
@@ -69,6 +70,7 @@ export function updateDocumentNonBlocking(docRef: DocumentReference, data: any) 
         requestResourceData: data,
       });
       errorEmitter.emit('permission-error', permissionError);
+       // IMPORTANT: Reject the promise to allow the caller to handle the failure.
       return Promise.reject(permissionError);
     });
 }
@@ -86,6 +88,7 @@ export function deleteDocumentNonBlocking(docRef: DocumentReference) {
         operation: 'delete',
       });
       errorEmitter.emit('permission-error', permissionError);
+       // IMPORTANT: Reject the promise to allow the caller to handle the failure.
       return Promise.reject(permissionError);
     });
 }
