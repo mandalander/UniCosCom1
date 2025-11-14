@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { ArrowBigUp, ArrowBigDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useUser, useFirestore, runVoteTransaction, addDocumentNonBlocking } from '@/firebase';
-import { doc, getDoc, Transaction, collection, serverTimestamp, getDocFromServer } from 'firebase/firestore';
+import { doc, getDoc, Transaction, collection, serverTimestamp, getDocFromServer, DocumentData } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
 import { useRouter } from 'next/navigation';
 import { useLanguage } from '@/app/components/language-provider';
@@ -67,24 +67,36 @@ export function VoteButtons({ targetType, targetId, creatorId, communityId, post
     if (!user || !firestore || user.uid === targetAuthorId) {
       return;
     }
-
+  
     const notificationsRef = collection(firestore, 'userProfiles', targetAuthorId, 'notifications');
     const notificationData = {
-        recipientId: targetAuthorId,
-        type: 'vote',
-        targetType: targetType,
-        targetId: targetId,
-        targetTitle: 'your content', // Simplified title
-        communityId: communityId,
-        postId: postId || targetId,
-        actorId: user.uid,
-        actorDisplayName: user.displayName || 'Someone',
-        read: false,
-        createdAt: serverTimestamp(),
+      recipientId: targetAuthorId,
+      type: 'vote' as const,
+      targetType: targetType,
+      targetId: targetId,
+      targetTitle: 'your content', // Simplified title
+      communityId: communityId,
+      postId: postId || targetId,
+      actorId: user.uid,
+      actorDisplayName: user.displayName || 'Someone',
+      read: false,
+      createdAt: serverTimestamp(),
     };
-    // This function already has built-in contextual error handling
-    addDocumentNonBlocking(notificationsRef, notificationData);
-  }
+  
+    // Directly use addDocumentNonBlocking and chain a .catch for specific error handling.
+    addDocumentNonBlocking(notificationsRef, notificationData)
+      .catch(error => {
+        // Create the rich, contextual error.
+        const permissionError = new FirestorePermissionError({
+          path: notificationsRef.path,
+          operation: 'create',
+          requestResourceData: notificationData,
+        });
+  
+        // Emit the error with the global error emitter.
+        errorEmitter.emit('permission-error', permissionError);
+      });
+  };
 
   const handleVote = async (newVote: 1 | -1) => {
     if (!user) {
@@ -153,7 +165,6 @@ export function VoteButtons({ targetType, targetId, creatorId, communityId, post
       setVoteCount(prev => (prev || 0) - voteChange);
       setUserVote(voteValueBefore === 0 ? null : voteValueBefore);
       
-      // Do not show a toast here. The global error handler will catch permission errors.
       if (!(e instanceof FirestorePermissionError)) {
           console.error("Vote transaction failed with a non-permission error: ", e);
           toast({
