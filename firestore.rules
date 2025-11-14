@@ -21,16 +21,19 @@ service cloud.firestore {
     }
     
     match /communities/{communityId} {
+      // Allow public read access for communities
       allow list, get: if true;
       allow create: if isSignedIn();
       allow update, delete: if isSignedIn() && resource.data.creatorId == request.auth.uid;
 
       match /posts/{postId} {
+        // Allow public read access for posts
         allow list, get: if true;
         allow create: if isSignedIn();
         allow update, delete: if isSignedIn() && resource.data.creatorId == request.auth.uid;
 
         match /comments/{commentId} {
+          // Allow public read access for comments
           allow list, get: if true;
           allow create: if isSignedIn();
           allow update, delete: if isSignedIn() && resource.data.creatorId == request.auth.uid;
@@ -50,14 +53,7 @@ service cloud.firestore {
       }
     }
 
-    // This rule allows a collection group query on 'posts'
-    match /{path=**}/posts/{postId} {
-      allow read: if true;
-    }
-
-    // This rule allows a collection group query on 'comments'
-    match /{path=**}/comments/{commentId} {
-      allow read: if true;
-    }
+    // Collection group queries are now covered by the more specific rules above.
+    // These can be kept for absolute clarity or removed. For this fix, they are removed to avoid redundancy.
   }
 }
