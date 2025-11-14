@@ -107,13 +107,12 @@ export function runVoteTransaction(
              // Create and emit the detailed, contextual error
             const permissionError = new FirestorePermissionError(errorContext);
             errorEmitter.emit('permission-error', permissionError);
-            // We still throw the original error so the UI can revert state,
+            // We still throw the permission error so the UI can revert state,
             // but the important part is that the contextual error was emitted.
             throw permissionError;
         }
         
-        // For other types of errors, re-throw a generic error
-        console.error("Vote transaction failed with a non-permission error: ", serverError);
-        throw new Error("Wystąpił błąd podczas zapisywania głosu. Spróbuj ponownie.");
+        // For other types of errors, re-throw the original error
+        throw serverError;
     });
 }
